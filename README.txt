@@ -1,4 +1,4 @@
-MY UNA WORLD 1.3.1
+MY UNA WORLD 1.3.2
 ==================
 
 Studio-only UNA 15 backup module.
@@ -293,4 +293,18 @@ IMPORTANT
   reloading the original POST response, preventing browser POST resubmission.
 - The fix applies to both manual inventory and manual full background backups.
 - No database schema changes are required from 1.3.0.
+
+
+1.3.2 MYUNAWORLD VENDOR IDENTITY
+---------------------------------
+- Official module vendor changed from NewtronJax to MyUNAWorld.
+- Restore verification and registration self-heal now require MyUNAWorld.
+- Existing technical identifiers remain unchanged for upgrade compatibility:
+  * Module name: my_una_world
+  * Module path: newton/my_una_world/
+  * Class prefix: MyUnaWorld
+  * Database prefix: my_una_world_
+- No database schema changes are required from 1.3.1.
+- This is a vendor-identity/version maintenance release; backup, restore,
+  rollback, retention and background-worker behavior are otherwise unchanged.
 
