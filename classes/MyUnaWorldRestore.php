@@ -2,7 +2,7 @@
 
 class MyUnaWorldRestore
 {
-    const CURRENT_TOOL_VERSION = '1.3.1';
+    const CURRENT_TOOL_VERSION = '1.3.2';
 
     protected $_oModule;
     protected $_oDb;
@@ -611,7 +611,7 @@ class MyUnaWorldRestore
                 (string)$aTool['uri'] === 'my_una_world' &&
                 (string)$aTool['class_prefix'] === 'MyUnaWorld' &&
                 (string)$aTool['db_prefix'] === 'my_una_world_' &&
-                (string)$aTool['vendor'] === 'NewtronJax';
+                (string)$aTool['vendor'] === 'MyUNAWorld';
 
             if (!$bRegistrationOk && is_array($aTool)) {
                 /*
@@ -648,7 +648,7 @@ class MyUnaWorldRestore
                     (string)$aTool['uri'] === 'my_una_world' &&
                     (string)$aTool['class_prefix'] === 'MyUnaWorld' &&
                     (string)$aTool['db_prefix'] === 'my_una_world_' &&
-                    (string)$aTool['vendor'] === 'NewtronJax';
+                    (string)$aTool['vendor'] === 'MyUNAWorld';
 
                 if ($bRegistrationOk) {
                     $aVerification['warnings'][] =
@@ -1029,7 +1029,7 @@ class MyUnaWorldRestore
         $sCurrentHost = $sCurrentUrl !== '' ? parse_url($sCurrentUrl, PHP_URL_HOST) : '';
 
         if ($sBackupHost && $sCurrentHost && strcasecmp($sBackupHost, $sCurrentHost) !== 0) {
-            $aBlock[] = '1.3.1 only performs same-site restores. Backup host is ' .
+            $aBlock[] = '1.3.2 only performs same-site restores. Backup host is ' .
                 $sBackupHost . ' and current host is ' . $sCurrentHost . '.';
         }
 
@@ -1376,7 +1376,7 @@ class MyUnaWorldRestore
                  `uri` = 'my_una_world',
                  `class_prefix` = 'MyUnaWorld',
                  `db_prefix` = 'my_una_world_',
-                 `vendor` = 'NewtronJax'
+                 `vendor` = 'MyUNAWorld'
              WHERE `name` = 'my_una_world'",
             array('version' => self::CURRENT_TOOL_VERSION)
         );
