@@ -2,7 +2,8 @@
 
 **Vendor:** MyUNAWorld  
 **Platform:** UNA CMS  
-**Module:** `my_una_world`
+**Module:** `my_una_world`  
+**Current version:** 1.3.2
 
 My UNA World is a Studio-only backup, restore, verification and disaster-recovery manager for UNA CMS.
 
@@ -23,24 +24,50 @@ It is designed to protect UNA sites before risky changes, create verified recove
 - Archive re-registration after server rebuild.
 - SHA-256 integrity verification.
 - Backup manifests and environment reports.
+- Background manual backups with live Studio progress.
 
 ## Project identity
 
 The official vendor identity for this module is **MyUNAWorld**.
 
-Compatibility-sensitive internal identifiers such as `my_una_world`, existing database prefixes, class prefixes and installed module paths are not renamed solely for branding purposes.
+Compatibility-sensitive internal identifiers remain unchanged:
 
-## Current verified release reference
+- Module name: `my_una_world`
+- Module path: `newton/my_una_world/`
+- Class prefix: `MyUnaWorld`
+- Database prefix: `my_una_world_`
 
-The newest release package currently identified for repository import is:
+These identifiers are not renamed solely for branding purposes.
 
-`My-UNA-World-1.3.1-FINAL.zip`
+## Release history baseline
 
-SHA-256:
+The exact original **1.3.1 FINAL** source imported from `My-UNA-World-1.3.1-FINAL.zip` is preserved on branch:
+
+`release-1.3.1-final`
+
+Original package SHA-256:
 
 `884267e3c34c9633a37b18963964a85a04a0ff5f6632defeb34b9283574a39c9`
 
-The module source will be imported from the verified release package after repository privacy is confirmed.
+The `main` branch advances that verified baseline to **1.3.2**, whose purpose is the vendor-identity migration from `NewtronJax` to **MyUNAWorld** while preserving technical compatibility.
+
+## 1.3.2 release artifacts
+
+Fresh-install package:
+
+`My-UNA-World-1.3.2.zip`
+
+SHA-256:
+
+`5546eb52134cf29d4fb66189442485a73511460790625d316d82263907df60e2`
+
+Native UNA updater from 1.3.1:
+
+`My-UNA-World-Update-1.3.1-to-1.3.2.zip`
+
+SHA-256:
+
+`e6db001ae7cc636eef31204902ebf68bad85868777c16d57169f4d22f6754560`
 
 ## UNA Marketplace release standard
 
