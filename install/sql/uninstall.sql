@@ -1,0 +1,14 @@
+DELETE FROM `sys_cron_jobs` WHERE `name` = 'my_una_world_backup_worker';
+SET @sName = 'my_una_world';
+SET @sHandlerName = 'my_una_world_lifecycle';
+SET @iHandler = (SELECT `id` FROM `sys_alerts_handlers` WHERE `name` = @sHandlerName LIMIT 1);
+DELETE FROM `sys_alerts` WHERE `handler_id` = @iHandler;
+DELETE FROM `sys_alerts_handlers` WHERE `id` = @iHandler;
+SET @iPageId = (SELECT `id` FROM `sys_std_pages` WHERE `name` = @sName LIMIT 1);
+DELETE FROM `sys_std_pages_widgets` WHERE `page_id` = @iPageId;
+DELETE FROM `sys_std_pages_widgets` WHERE `widget_id` IN (SELECT `id` FROM `sys_std_widgets` WHERE `module` = @sName);
+DELETE FROM `sys_std_widgets` WHERE `module` = @sName;
+DELETE FROM `sys_std_widgets` WHERE `page_id` = @iPageId;
+DELETE FROM `sys_std_pages` WHERE `name` = @sName;
+DROP TABLE IF EXISTS `my_una_world_backups`;
+DROP TABLE IF EXISTS `my_una_world_jobs`;

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+<title id="title">My UNA World</title>
+<circle cx="256" cy="256" r="224" fill="#1976d2"/>
+<circle cx="256" cy="256" r="174" fill="none" stroke="#fff" stroke-width="26"/>
+<path d="M82 256h348M256 82c58 52 89 111 89 174s-31 122-89 174c-58-52-89-111-89-174S198 134 256 82z" fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M116 164h280M116 348h280" fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round"/>
+</svg>
