@@ -293,3 +293,4 @@ IMPORTANT
   reloading the original POST response, preventing browser POST resubmission.
 - The fix applies to both manual inventory and manual full background backups.
 - No database schema changes are required from 1.3.0.
+
