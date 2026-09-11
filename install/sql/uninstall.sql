@@ -12,3 +12,6 @@ DELETE FROM `sys_std_widgets` WHERE `page_id` = @iPageId;
 DELETE FROM `sys_std_pages` WHERE `name` = @sName;
 DROP TABLE IF EXISTS `my_una_world_backups`;
 DROP TABLE IF EXISTS `my_una_world_jobs`;
+
+DELETE FROM `sys_injections_admin`
+WHERE `name` = 'my_una_world_lifecycle_notice';

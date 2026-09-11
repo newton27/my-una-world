@@ -23,6 +23,27 @@ class MyUnaWorldBackup
 
     public function run($sMode = 'inventory', array $aContext = array())
     {
+        $sPath = $this->_sBackupRoot . DIRECTORY_SEPARATOR . '.backup-engine.lock';
+        $hLock = @fopen($sPath, 'c');
+        if (!$hLock)
+            throw new RuntimeException('Unable to open backup engine lock.');
+
+        if (!flock($hLock, LOCK_EX | LOCK_NB)) {
+            fclose($hLock);
+            throw new RuntimeException('A backup is already running for this site. Try again after it finishes.');
+        }
+
+        try {
+            return $this->_runWithEngineLock($sMode, $aContext);
+        }
+        finally {
+            flock($hLock, LOCK_UN);
+            fclose($hLock);
+        }
+    }
+
+    protected function _runWithEngineLock($sMode = 'inventory', array $aContext = array())
+    {
         $sMode = $sMode === 'full' ? 'full' : 'inventory';
         $this->_iJobId = isset($aContext['job_id']) ? (int)$aContext['job_id'] : 0;
 
