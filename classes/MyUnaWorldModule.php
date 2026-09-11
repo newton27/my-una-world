@@ -52,6 +52,23 @@ class MyUnaWorldModule extends BxDolModule
 
     public function queueBackup($sMode = 'full', array $aContext = array())
     {
+        $hLock = $this->_openQueueWorkerLock();
+        if (!flock($hLock, LOCK_EX | LOCK_NB)) {
+            fclose($hLock);
+            throw new RuntimeException('The backup worker is busy. Try again after it finishes.');
+        }
+
+        try {
+            return $this->_queueBackupWithLock($sMode, $aContext);
+        }
+        finally {
+            flock($hLock, LOCK_UN);
+            fclose($hLock);
+        }
+    }
+
+    protected function _queueBackupWithLock($sMode = 'full', array $aContext = array())
+    {
         $sMode = $sMode === 'inventory' ? 'inventory' : 'full';
 
         $aActive = $this->_oDb->getActiveJob();
@@ -85,7 +102,34 @@ class MyUnaWorldModule extends BxDolModule
         );
     }
 
+    protected function _openQueueWorkerLock()
+    {
+        $sPath = rtrim($this->getBackupRoot(), DIRECTORY_SEPARATOR) .
+            DIRECTORY_SEPARATOR . '.backup-queue-worker.lock';
+        $hLock = @fopen($sPath, 'c');
+        if (!$hLock)
+            throw new RuntimeException('Unable to open backup queue lock.');
+        return $hLock;
+    }
+
     public function processPendingBackupJob()
+    {
+        $hLock = $this->_openQueueWorkerLock();
+        if (!flock($hLock, LOCK_EX | LOCK_NB)) {
+            fclose($hLock);
+            return false;
+        }
+
+        try {
+            return $this->_processPendingBackupJobWithLock();
+        }
+        finally {
+            flock($hLock, LOCK_UN);
+            fclose($hLock);
+        }
+    }
+
+    protected function _processPendingBackupJobWithLock()
     {
         @set_time_limit(0);
         @ignore_user_abort(true);
@@ -306,6 +350,134 @@ class MyUnaWorldModule extends BxDolModule
         return $aSettings;
     }
 
+    public function serviceGetLifecycleStudioNotice()
+    {
+        if (empty($_SERVER['REQUEST_URI']))
+            return '';
+
+        $sUri = (string)$_SERVER['REQUEST_URI'];
+
+        $bStudioModules =
+            strpos($sUri, '/studio/store.php') !== false ||
+            strpos($sUri, '/studio/module.php') !== false;
+
+        if (!$bStudioModules)
+            return '';
+
+        if (strpos($sUri, 'module.php?name=my_una_world') !== false)
+            return '';
+
+        $aSettings = $this->getLifecycleSettings();
+
+        $bInstall = !empty($aSettings['backup_before_install']);
+        $bRemove = !empty($aSettings['backup_before_uninstall']);
+
+        if (!$bInstall && !$bRemove)
+            return '';
+
+        if ($bInstall && $bRemove) {
+            $sTitle = 'My UNA World safety backups are enabled';
+            $sText = 'Installing, updating, or removing a module will first create a full site safety backup. The module operation continues only after the backup completes successfully.';
+        }
+        elseif ($bInstall) {
+            $sTitle = 'My UNA World install safety backup is enabled';
+            $sText = 'Installing a module will first create a full site safety backup. The installation continues only after the backup completes successfully.';
+        }
+        else {
+            $sTitle = 'My UNA World update/removal safety backup is enabled';
+            $sText = 'Updating or removing a module will first create a full site safety backup. The module operation continues only after the backup completes successfully.';
+        }
+
+        $sNotice =
+            '<div id="my-una-world-lifecycle-warning" ' .
+            'style="margin:0 0 16px 0;padding:14px 16px;border:1px solid #d6a600;' .
+            'border-radius:6px;background:#fff8d8;color:#5c4900;line-height:1.45">' .
+            '<div style="font-weight:700;margin-bottom:4px">' .
+            htmlspecialchars($sTitle, ENT_QUOTES, 'UTF-8') .
+            '</div>' .
+            '<div>' .
+            htmlspecialchars($sText, ENT_QUOTES, 'UTF-8') .
+            '</div>' .
+            '</div>';
+
+        $sScript =
+            '<script>' .
+            'document.addEventListener("DOMContentLoaded",function(){' .
+            'var n=document.getElementById("my-una-world-lifecycle-warning");' .
+            'if(!n)return;' .
+            'var p=document.querySelector("#bx-std-pc-content");' .
+            'if(p&&n.parentNode!==p)p.insertBefore(n,p.firstChild);' .
+
+            'var muwInstall=' . ($bInstall ? 'true' : 'false') . ';' .
+            'var muwRemove=' . ($bRemove ? 'true' : 'false') . ';' .
+
+            'function muwStatus(title,text,busy){' .
+            'var x=document.getElementById("my-una-world-lifecycle-warning");' .
+            'if(!x)return;' .
+            'var d=x.getElementsByTagName("div");' .
+            'if(d.length>0)d[0].textContent=title;' .
+            'if(d.length>1)d[1].textContent=text;' .
+            'x.style.opacity=busy?"1":"0.9";' .
+            '}' .
+
+            'if(window.BxDolStudioStore&&BxDolStudioStore.prototype.perform){' .
+            'var op=BxDolStudioStore.prototype.perform;' .
+            'BxDolStudioStore.prototype.perform=function(t,v,ok,input){' .
+            'if(t==="install"&&muwInstall){' .
+            'muwStatus("Creating My UNA World safety backup","A full safety backup is being created before this module installation. UNA will continue automatically after the backup succeeds.",true);' .
+            '}' .
+            'if(t==="update"&&muwRemove){' .
+            'muwStatus("Creating My UNA World safety backup","A full safety backup is being created before this module update. UNA will continue automatically after the backup succeeds.",true);' .
+            '}' .
+            'return op.call(this,t,v,ok,input);' .
+            '};' .
+            '}' .
+
+            'if(window.BxDolStudioStore&&BxDolStudioStore.prototype.getUpdateAndInstall){' .
+            'var og=BxDolStudioStore.prototype.getUpdateAndInstall;' .
+            'BxDolStudioStore.prototype.getUpdateAndInstall=function(name,button){' .
+            'if(muwRemove){' .
+            'muwStatus("Creating My UNA World safety backup","A full safety backup is being created before this module update. UNA will continue automatically after the backup succeeds.",true);' .
+            '}' .
+            'return og.call(this,name,button);' .
+            '};' .
+            '}' .
+
+            'if(muwRemove&&window.BxDolStudioModule&&BxDolStudioModule.prototype.uninstall){' .
+            'var ou=BxDolStudioModule.prototype.uninstall;' .
+            'BxDolStudioModule.prototype.uninstall=function(name,wid,confirmed){' .
+            'if(parseInt(confirmed)===1&&muwRemove){' .
+            'muwStatus("Creating My UNA World safety backup","A full safety backup is being created before this module removal. UNA will continue automatically after the backup succeeds.",true);' .
+            '}' .
+            'return ou.call(this,name,wid,confirmed);' .
+            '};' .
+            '}' .
+
+            'if(window.jQuery){' .
+            'jQuery(document).ajaxComplete(function(e,x,o){' .
+            'var data=typeof o.data==="string"?o.data:"";' .
+            'var lifecycle=' .
+            '(muwInstall&&data.indexOf("str_action=install")!==-1)||' .
+            '(muwRemove&&data.indexOf("str_action=update")!==-1)||' .
+            '(muwRemove&&data.indexOf("str_action=get-update-and-install")!==-1)||' .
+            '(muwRemove&&data.indexOf("_action=uninstall")!==-1);' .
+            'if(!lifecycle)return;' .
+            'var r=x.responseJSON;' .
+            'if(r&&parseInt(r.code)===0){' .
+            'muwStatus("My UNA World safety operation completed","The protected module operation completed successfully.",false);' .
+            '}else if(r&&parseInt(r.code)===2){' .
+            'muwStatus("My UNA World safety operation queued","UNA accepted the protected module operation and queued further processing.",false);' .
+            '}else{' .
+            'muwStatus("Protected module operation did not complete","Check the UNA notification for the reason. The safety policy remains active.",false);' .
+            '}' .
+            '});' .
+            '}' .
+
+            '});' .
+            '</script>';
+
+        return $sNotice . $sScript;
+    }
     public function getLifecycleStatus()
     {
         $oDb = BxDolDb::getInstance();
@@ -498,6 +670,19 @@ class MyUnaWorldModule extends BxDolModule
         $aBackups = $this->getBackups(1000);
         if (!$aBackups)
             return $aResult;
+
+        // Count only completed full archives that still exist.
+        // Inventory reports and failed/missing records are not restore points.
+        $sRetentionRoot = rtrim($this->getBackupRoot(), DIRECTORY_SEPARATOR);
+        $aBackups = array_values(array_filter($aBackups, function($aBackup) use ($sRetentionRoot) {
+            $sName = isset($aBackup['archive_name']) ? (string)$aBackup['archive_name'] : '';
+            return isset($aBackup['status'], $aBackup['mode']) &&
+                $aBackup['status'] === 'complete' &&
+                $aBackup['mode'] === 'full' &&
+                preg_match('/^my_una_world_full_[0-9]{8}_[0-9]{6}\\.zip$/D', $sName) &&
+                !is_link($sRetentionRoot . DIRECTORY_SEPARATOR . $sName) &&
+                is_file($sRetentionRoot . DIRECTORY_SEPARATOR . $sName);
+        }));
 
         /*
          * Newest first. The database history already returns newest first in

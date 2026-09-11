@@ -5,6 +5,10 @@
 **Module:** `my_una_world`  
 **Current version:** 1.3.2
 
+**Source status:** main includes unreleased September 11 hotfixes after the
+1.3.2 release. The published 1.3.2 ZIP hashes below describe the historical
+release, not the current main source. See [hotfix notes](RELEASES/UNRELEASED.md).
+
 My UNA World is a Studio-only backup, restore, verification and disaster-recovery manager for UNA CMS.
 
 It is designed to protect UNA sites before risky changes, create verified recovery archives, inspect and dry-run restores, verify restored sites, manage backup retention, and support complete server disaster recovery from a native UNA Studio workflow.
