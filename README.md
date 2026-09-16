@@ -61,6 +61,15 @@ when authentication or request context cannot be determined safely, including
 ambiguous requests that cannot confidently be classified as browser
 navigation.
 
+The gate is enabled by default. Administrators can turn it on or off at
+Studio → My UNA World → Settings with **Enable Visitor Gate**. The choice is
+stored with the existing lifecycle and retention settings in
+`.module_lifecycle_settings.json` under the private My UNA World backup
+folder. An older or missing settings file has no visitor-gate field and is
+treated as enabled. Turning the checkbox off bypasses visitor gating without
+changing the `system / design_included` registration; lifecycle backup,
+retention and alert-handler settings remain unchanged.
+
 For an emergency rollback during controlled testing, remove only the
 `system / design_included` subscription for the existing
 `my_una_world_lifecycle` alert handler. Keep the handler and its

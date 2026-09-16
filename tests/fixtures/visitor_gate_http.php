@@ -14,6 +14,21 @@ class BxDolAlertsResponse
 {
 }
 
+class VisitorGateHttpBackupStub
+{
+    private $root;
+
+    public function __construct($sRoot)
+    {
+        $this->root = $sRoot;
+    }
+
+    public function getBackupRoot()
+    {
+        return $this->root;
+    }
+}
+
 function bx_get($sKey)
 {
     return isset($_REQUEST[$sKey]) ? $_REQUEST[$sKey] : null;
@@ -62,7 +77,34 @@ if (isset($_SERVER['HTTP_X_MUW_TEST_REQUEST_URI'])) {
 
 require_once __DIR__ . '/../../classes/MyUnaWorldModule.php';
 
-class VisitorGateHttpTestModule extends MyUnaWorldModule
+$sGateMode = isset($_SERVER['HTTP_X_MUW_TEST_GATE'])
+    ? (string)$_SERVER['HTTP_X_MUW_TEST_GATE']
+    : 'missing';
+$sSettingsRoot = sys_get_temp_dir() . '/muw-visitor-gate-http-' . getmypid() . '-' . bin2hex(random_bytes(4));
+mkdir($sSettingsRoot, 0700, true);
+$sSettingsPath = $sSettingsRoot . '/.module_lifecycle_settings.json';
+if ($sGateMode === 'on' || $sGateMode === 'off') {
+    file_put_contents($sSettingsPath, json_encode(array(
+        'visitor_gate_enabled' => $sGateMode === 'on',
+    )));
+}
+register_shutdown_function(function () use ($sSettingsPath, $sSettingsRoot) {
+    if (is_file($sSettingsPath))
+        unlink($sSettingsPath);
+    if (is_dir($sSettingsRoot))
+        rmdir($sSettingsRoot);
+});
+
+class VisitorGateConfiguredHttpModule extends MyUnaWorldModule
+{
+    protected function _getBackupEngine()
+    {
+        global $sSettingsRoot;
+        return new VisitorGateHttpBackupStub($sSettingsRoot);
+    }
+}
+
+class VisitorGateHttpTestModule extends VisitorGateConfiguredHttpModule
 {
     public $redirects = array();
 
@@ -74,7 +116,7 @@ class VisitorGateHttpTestModule extends MyUnaWorldModule
 
 $bBaseMode = isset($_SERVER['HTTP_X_MUW_TEST_MODE']) &&
     $_SERVER['HTTP_X_MUW_TEST_MODE'] === 'base';
-$oModule = $bBaseMode ? new MyUnaWorldModule() : new VisitorGateHttpTestModule();
+$oModule = $bBaseMode ? new VisitorGateConfiguredHttpModule() : new VisitorGateHttpTestModule();
 $sError = '';
 
 try {

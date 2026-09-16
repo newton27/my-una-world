@@ -56,12 +56,12 @@ muw_updater_assert_same('MyUNAWorld', isset($aConfig['vendor']) ? $aConfig['vend
 muw_updater_assert_same('newton/my_una_world/', isset($aConfig['module_dir']) ? $aConfig['module_dir'] : null, 'updater module directory');
 muw_updater_assert_same('my_una_world', isset($aConfig['module_uri']) ? $aConfig['module_uri'] : null, 'updater module URI');
 muw_updater_assert_same(
-    array('execute_sql', 'update_files', 'clear_db_cache'),
+    array('execute_sql', 'update_files', 'update_languages', 'clear_db_cache'),
     isset($aConfig['install']) && is_array($aConfig['install']) ? array_keys($aConfig['install']) : array(),
     'updater action order'
 );
 muw_updater_assert_same(
-    array(1, 1, 1),
+    array(1, 1, 1, 1),
     isset($aConfig['install']) && is_array($aConfig['install']) ? array_values($aConfig['install']) : array(),
     'updater actions are enabled'
 );
@@ -104,6 +104,7 @@ $aPayloadFiles = array(
     'classes/MyUnaWorldRestore.php',
     'classes/MyUnaWorldStudioPage.php',
     'install/config.php',
+    'install/langs/en.xml',
     'install/sql/enable.sql',
 );
 
@@ -115,6 +116,37 @@ foreach ($aPayloadFiles as $sRelative) {
         is_file($sPayload) ? hash_file('sha256', $sPayload) : null,
         'updater payload matches source for ' . $sRelative
     );
+}
+
+$sUpdaterLanguage = $sUpdater . '/install/langs/en.xml';
+if (!is_file($sUpdaterLanguage)) {
+    $aFailures[] = 'Missing native updater language payload: ' . $sUpdaterLanguage;
+}
+else {
+    $oUpdaterLanguage = simplexml_load_file($sUpdaterLanguage, 'SimpleXMLElement', LIBXML_NOCDATA);
+    if ($oUpdaterLanguage === false) {
+        $aFailures[] = 'Native updater language payload is not valid XML.';
+    }
+    else {
+        $aAdded = array();
+        foreach ($oUpdaterLanguage->string_add as $oString)
+            $aAdded[(string)$oString['name']] = (string)$oString;
+
+        muw_updater_assert_same(
+            'Enable Visitor Gate',
+            isset($aAdded['_my_una_world_visitor_gate_enabled']) ? $aAdded['_my_una_world_visitor_gate_enabled'] : null,
+            'updater adds Visitor Gate label through native string_add payload'
+        );
+        muw_updater_assert_same(
+            'Restricts logged-out visitors to Home, Login, Create Account, Forgot Password, Terms, and Privacy. Logged-in members and administrators remain unrestricted.',
+            isset($aAdded['_my_una_world_visitor_gate_enabled_desc']) ? $aAdded['_my_una_world_visitor_gate_enabled_desc'] : null,
+            'updater adds Visitor Gate description through native string_add payload'
+        );
+        muw_updater_assert_same(2, count($aAdded), 'updater language payload adds only the two Visitor Gate strings');
+        muw_updater_assert_same(0, count($oUpdaterLanguage->string), 'updater language payload does not use full-resource string elements');
+        muw_updater_assert_same(0, count($oUpdaterLanguage->string_upd), 'updater language payload does not update unrelated strings');
+        muw_updater_assert_same(0, count($oUpdaterLanguage->string_del), 'updater language payload does not delete strings');
+    }
 }
 
 if ($aFailures) {

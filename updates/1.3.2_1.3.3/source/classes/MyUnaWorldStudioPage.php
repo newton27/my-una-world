@@ -332,6 +332,13 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         $sContent .= $this->_hiddenCommon('save_settings');
 
         $sContent .= $this->_checkbox(
+            'visitor_gate_enabled',
+            _t('_my_una_world_visitor_gate_enabled'),
+            !empty($aSettings['visitor_gate_enabled']),
+            _t('_my_una_world_visitor_gate_enabled_desc')
+        );
+
+        $sContent .= $this->_checkbox(
             'backup_before_install',
             _t('_my_una_world_backup_before_install'),
             !empty($aSettings['backup_before_install']),
@@ -571,6 +578,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
 
                 case 'save_settings':
                     $this->_aPostResult = $this->_oModule->saveLifecycleSettings(array(
+                        'visitor_gate_enabled' => isset($_POST['visitor_gate_enabled']),
                         'backup_before_install' => isset($_POST['backup_before_install']),
                         'backup_before_uninstall' => isset($_POST['backup_before_uninstall']),
                         'block_on_failure' => isset($_POST['block_on_failure']),

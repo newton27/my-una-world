@@ -203,6 +203,34 @@ function muw_assert_production_http_redirect($iPort)
     );
 }
 
+function muw_assert_production_http_gate_mode($iPort, $sGateMode, $bRedirects, $sLabel)
+{
+    $aResponse = muw_http_request($iPort, 'GET', '/groups-home', array(
+        'Accept' => 'text/html,application/xhtml+xml',
+        'Sec-Fetch-Mode' => 'navigate',
+        'Sec-Fetch-Dest' => 'document',
+        'X-MUW-Test-Auth' => 'guest',
+        'X-MUW-Test-Mode' => 'base',
+        'X-MUW-Test-Gate' => $sGateMode,
+    ));
+
+    muw_assert_same(
+        $bRedirects ? 302 : 200,
+        (int)substr($aResponse['status'], 9, 3),
+        $sLabel . ' HTTP status'
+    );
+    muw_assert_same(
+        $bRedirects ? '/' : null,
+        isset($aResponse['headers']['location']) ? $aResponse['headers']['location'] : null,
+        $sLabel . ' redirect target'
+    );
+    muw_assert_same(
+        !$bRedirects,
+        strpos($aResponse['body'], 'visitor-gate-continued') !== false,
+        $sLabel . ' request continuation'
+    );
+}
+
 function muw_assert_production_http_fail_open($iPort, $sRootMode, $sLabel)
 {
     $aResponse = muw_http_request($iPort, 'GET', '/groups-home', array(
@@ -269,6 +297,10 @@ $iPort = muw_find_free_port();
             muw_wait_for_server($iPort);
 
         muw_assert_production_http_redirect($iPort);
+        muw_assert_production_http_gate_mode($iPort, 'missing', true, 'missing setting keeps Visitor Gate ON');
+        muw_assert_production_http_gate_mode($iPort, 'on', true, 'explicit ON gates blocked guest navigation');
+        muw_assert_production_http_gate_mode($iPort, 'off', false, 'OFF bypasses Visitor Gate');
+        muw_assert_production_http_gate_mode($iPort, 'on', true, 'restoring ON restores Visitor Gate');
         muw_assert_production_http_fail_open(
             $iPort,
             'scheme-only',

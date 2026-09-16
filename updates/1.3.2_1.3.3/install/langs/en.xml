@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources name="en" flag="gb" title="English">
+    <string_add name="_my_una_world_visitor_gate_enabled"><![CDATA[Enable Visitor Gate]]></string_add>
+    <string_add name="_my_una_world_visitor_gate_enabled_desc"><![CDATA[Restricts logged-out visitors to Home, Login, Create Account, Forgot Password, Terms, and Privacy. Logged-in members and administrators remain unrestricted.]]></string_add>
+</resources>

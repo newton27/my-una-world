@@ -24,6 +24,8 @@
     <string name="_my_una_world_upload_backup_desc"><![CDATA[Use this for smaller backups that fit your PHP/web-server upload limits. Large backups should be copied directly to the private backup folder and registered above.]]></string>
     <string name="_my_una_world_restore_reports"><![CDATA[Restore Reports]]></string>
     <string name="_my_una_world_no_restore_reports"><![CDATA[No restore or rollback reports are present.]]></string>
+    <string name="_my_una_world_visitor_gate_enabled"><![CDATA[Enable Visitor Gate]]></string>
+    <string name="_my_una_world_visitor_gate_enabled_desc"><![CDATA[Restricts logged-out visitors to Home, Login, Create Account, Forgot Password, Terms, and Privacy. Logged-in members and administrators remain unrestricted.]]></string>
     <string name="_my_una_world_backup_before_install"><![CDATA[Backup before module install]]></string>
     <string name="_my_una_world_backup_before_install_desc"><![CDATA[Create a full safety snapshot before a newly installed UNA module changes the site.]]></string>
     <string name="_my_una_world_backup_before_uninstall"><![CDATA[Backup before module removal or update]]></string>

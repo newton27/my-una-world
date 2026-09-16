@@ -148,6 +148,15 @@ class MyUnaWorldModule extends BxDolModule
         if (PHP_SAPI === 'cli')
             return;
 
+        try {
+            $aSettings = $this->getLifecycleSettings();
+            if (empty($aSettings['visitor_gate_enabled']))
+                return;
+        }
+        catch (Throwable $e) {
+            // Missing or unavailable settings preserve the existing enabled gate.
+        }
+
         if (!function_exists('isLogged'))
             return;
 
@@ -460,6 +469,7 @@ class MyUnaWorldModule extends BxDolModule
     public function getLifecycleSettings()
     {
         $aDefaults = array(
+            'visitor_gate_enabled' => true,
             'backup_before_install' => true,
             'backup_before_uninstall' => true,
             'block_on_failure' => true,
@@ -478,6 +488,7 @@ class MyUnaWorldModule extends BxDolModule
             return $aDefaults;
 
         return array(
+            'visitor_gate_enabled' => !isset($aSaved['visitor_gate_enabled']) || !empty($aSaved['visitor_gate_enabled']),
             'backup_before_install' => !empty($aSaved['backup_before_install']),
             'backup_before_uninstall' => !empty($aSaved['backup_before_uninstall']),
             'block_on_failure' => !empty($aSaved['block_on_failure']),
@@ -496,6 +507,7 @@ class MyUnaWorldModule extends BxDolModule
     public function saveLifecycleSettings(array $aInput)
     {
         $aSettings = array(
+            'visitor_gate_enabled' => !empty($aInput['visitor_gate_enabled']),
             'backup_before_install' => !empty($aInput['backup_before_install']),
             'backup_before_uninstall' => !empty($aInput['backup_before_uninstall']),
             'block_on_failure' => !empty($aInput['block_on_failure']),
