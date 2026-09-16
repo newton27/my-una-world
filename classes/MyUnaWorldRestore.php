@@ -2,7 +2,7 @@
 
 class MyUnaWorldRestore
 {
-    const CURRENT_TOOL_VERSION = '1.3.2';
+    const CURRENT_TOOL_VERSION = '1.3.3';
 
     protected $_oModule;
     protected $_oDb;
@@ -1029,7 +1029,7 @@ class MyUnaWorldRestore
         $sCurrentHost = $sCurrentUrl !== '' ? parse_url($sCurrentUrl, PHP_URL_HOST) : '';
 
         if ($sBackupHost && $sCurrentHost && strcasecmp($sBackupHost, $sCurrentHost) !== 0) {
-            $aBlock[] = '1.3.2 only performs same-site restores. Backup host is ' .
+            $aBlock[] = '1.3.3 only performs same-site restores. Backup host is ' .
                 $sBackupHost . ' and current host is ' . $sCurrentHost . '.';
         }
 
