@@ -3,11 +3,14 @@
 **Vendor:** MyUNAWorld  
 **Platform:** UNA CMS  
 **Module:** `my_una_world`  
-**Current version:** 1.3.2
+**Current version:** 1.3.3 candidate
 
-**Source status:** main includes unreleased September 11 hotfixes after the
-1.3.2 release. The published 1.3.2 ZIP hashes below describe the historical
-release, not the current main source. See [hotfix notes](RELEASES/UNRELEASED.md).
+**Source status:** candidate 1.3.3 adds the visitor navigation gate and its
+native 1.3.2-to-1.3.3 updater on top of source that includes unreleased
+September 11 hotfixes. The published 1.3.2 ZIP hashes below describe the
+historical release, not the current source. See
+[the 1.3.3 candidate notes](RELEASES/1.3.3.md) and
+[the hotfix notes](RELEASES/UNRELEASED.md).
 
 My UNA World is a Studio-only backup, restore, verification and disaster-recovery manager for UNA CMS.
 
@@ -42,6 +45,31 @@ Compatibility-sensitive internal identifiers remain unchanged:
 - Database prefix: `my_una_world_`
 
 These identifiers are not renamed solely for branding purposes.
+
+## Visitor navigation gate (1.3.3 candidate)
+
+For guests, the public routes are exactly `/`, `/login`, `/member.php`,
+`/create-account`, `/forgot-password`, `/terms` and `/privacy`. A single
+trailing slash is also accepted on route-style paths. Other clear browser
+navigations receive a temporary redirect to the UNA site root. Authenticated
+members and administrators are unrestricted.
+
+The gate runs through UNA's `system / design_included` alert. It does not use
+`.htaccess`, and it is a navigation gate rather than a file or API security
+boundary. Dynamic, HTMX, API and XHR requests bypass it. It also fails open
+when authentication or request context cannot be determined safely, including
+ambiguous requests that cannot confidently be classified as browser
+navigation.
+
+For an emergency rollback during controlled testing, remove only the
+`system / design_included` subscription for the existing
+`my_una_world_lifecycle` alert handler. Keep the handler and its
+`system / before_install` and `system / before_uninstall` subscriptions so
+lifecycle protection remains active. Then call
+`BxDolAlerts::cacheInvalidate()` from an already bootstrapped, trusted UNA
+context and make a fresh HTTP request. See the
+[1.3.3 candidate notes](RELEASES/1.3.3.md) for the exact SQL and deployment
+constraints.
 
 ## Release history baseline
 
