@@ -1,7 +1,10 @@
 <?php
 
 define('BX_DOL', true);
-define('BX_DOL_URL_ROOT', '/');
+$sRootMode = isset($_SERVER['HTTP_X_MUW_TEST_ROOT'])
+    ? (string)$_SERVER['HTTP_X_MUW_TEST_ROOT']
+    : '';
+define('BX_DOL_URL_ROOT', $sRootMode === 'scheme-only' ? 'https:' : '/');
 
 class BxDolModule
 {

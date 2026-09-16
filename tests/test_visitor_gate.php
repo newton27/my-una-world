@@ -203,6 +203,34 @@ function muw_assert_production_http_redirect($iPort)
     );
 }
 
+function muw_assert_production_http_fail_open($iPort, $sRootMode, $sLabel)
+{
+    $aResponse = muw_http_request($iPort, 'GET', '/groups-home', array(
+        'Accept' => 'text/html,application/xhtml+xml',
+        'Sec-Fetch-Mode' => 'navigate',
+        'Sec-Fetch-Dest' => 'document',
+        'X-MUW-Test-Auth' => 'guest',
+        'X-MUW-Test-Mode' => 'base',
+        'X-MUW-Test-Root' => $sRootMode,
+    ));
+
+    muw_assert_same(
+        1,
+        preg_match('/^HTTP\/1\.[01] 200(?: |$)/', $aResponse['status']),
+        $sLabel . ' keeps the original HTTP response'
+    );
+    muw_assert_same(
+        false,
+        isset($aResponse['headers']['location']),
+        $sLabel . ' sends no Location header'
+    );
+    muw_assert_same(
+        true,
+        strpos($aResponse['body'], 'visitor-gate-continued') !== false,
+        $sLabel . ' fails open without terminating'
+    );
+}
+
 // A broken or absent CLI guard would redirect this blocked path in the test process.
 $bGateAvailable = method_exists('MyUnaWorldModule', 'handleVisitorGate');
 if ($bGateAvailable) {
@@ -241,6 +269,11 @@ $iPort = muw_find_free_port();
             muw_wait_for_server($iPort);
 
         muw_assert_production_http_redirect($iPort);
+        muw_assert_production_http_fail_open(
+            $iPort,
+            'scheme-only',
+            'malformed absolute root'
+        );
 
         $aNavigationHeaders = array(
             'Accept' => 'text/html,application/xhtml+xml',
@@ -301,6 +334,33 @@ $iPort = muw_find_free_port();
             '/',
             'legacy text/html navigation is gated',
             array('Accept' => 'text/html', 'X-MUW-Test-Auth' => 'guest')
+        );
+
+        muw_assert_http_redirect(
+            $iPort,
+            'GET',
+            '/groups-home',
+            '/',
+            'legacy positive-quality HTML navigation is gated',
+            array('Accept' => 'application/json,text/html;q=0.5', 'X-MUW-Test-Auth' => 'guest')
+        );
+
+        muw_assert_http_redirect(
+            $iPort,
+            'GET',
+            '/groups-home',
+            '',
+            'refused legacy HTML fails open',
+            array('Accept' => 'application/json,text/html;q=0', 'X-MUW-Test-Auth' => 'guest')
+        );
+
+        muw_assert_http_redirect(
+            $iPort,
+            'GET',
+            '/groups-home',
+            '',
+            'malformed legacy HTML quality fails open',
+            array('Accept' => 'application/json,text/html;q=bogus', 'X-MUW-Test-Auth' => 'guest')
         );
 
         $aIframeHeaders = $aNavigationHeaders;

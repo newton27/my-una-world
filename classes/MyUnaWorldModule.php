@@ -83,10 +83,34 @@ class MyUnaWorldModule extends BxDolModule
         if (!isset($_SERVER['HTTP_ACCEPT']) || !is_string($_SERVER['HTTP_ACCEPT']))
             return false;
 
-        return preg_match(
-            '/(?:^|,)\s*(?:text\/html|application\/xhtml\+xml)(?:\s*;[^,]*)?(?:,|$)/i',
-            $_SERVER['HTTP_ACCEPT']
-        ) === 1;
+        $bAcceptsHtml = false;
+        foreach (explode(',', $_SERVER['HTTP_ACCEPT']) as $sMediaRange) {
+            $aParts = explode(';', $sMediaRange);
+            $sMediaType = strtolower(trim(array_shift($aParts)));
+            if ($sMediaType !== 'text/html' && $sMediaType !== 'application/xhtml+xml')
+                continue;
+
+            $bHasQuality = false;
+            $sQuality = '';
+            foreach ($aParts as $sParameter) {
+                $sParameter = trim($sParameter);
+                if (preg_match('/^q\s*=\s*(.*)$/i', $sParameter, $aQuality)) {
+                    if ($bHasQuality || !preg_match('/^(?:0(?:\.\d{0,3})?|1(?:\.0{0,3})?)$/', $aQuality[1]))
+                        return false;
+
+                    $bHasQuality = true;
+                    $sQuality = $aQuality[1];
+                }
+                elseif (preg_match('/^q(?:\s|$)/i', $sParameter)) {
+                    return false;
+                }
+            }
+
+            if (!$bHasQuality || (float)$sQuality > 0)
+                $bAcceptsHtml = true;
+        }
+
+        return $bAcceptsHtml;
     }
 
     protected function _redirectGuestToHome()
@@ -105,9 +129,15 @@ class MyUnaWorldModule extends BxDolModule
             return;
         }
 
-        if ($aRoot === false || ($sRoot[0] !== '/' &&
-            (!isset($aRoot['scheme']) || !in_array(strtolower($aRoot['scheme']), array('http', 'https'), true))))
+        if ($aRoot === false)
             return;
+
+        if ($sRoot[0] !== '/') {
+            if (!isset($aRoot['scheme']) ||
+                !in_array(strtolower($aRoot['scheme']), array('http', 'https'), true) ||
+                !isset($aRoot['host']) || $aRoot['host'] === '')
+                return;
+        }
 
         header('Location: ' . $sRoot, true, 302);
         exit;
