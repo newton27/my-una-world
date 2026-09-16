@@ -193,9 +193,8 @@ else {
 
 if ($bGateAvailable) {
     $iPort = muw_find_free_port();
-    $sPhp = dirname(__DIR__, 2) . '/php/php';
     $sRouter = __DIR__ . '/fixtures/visitor_gate_http.php';
-    $aCommand = array($sPhp, '-d', 'display_errors=1', '-S', '127.0.0.1:' . $iPort, $sRouter);
+    $aCommand = array(PHP_BINARY, '-d', 'display_errors=1', '-S', '127.0.0.1:' . $iPort, $sRouter);
     $aPipes = array();
     $hServer = proc_open(
         $aCommand,
@@ -231,6 +230,7 @@ if ($bGateAvailable) {
             array('/create-account', ''),
             array('/create-account/', ''),
             array('/forgot-password', ''),
+            array('/forgot-password/', ''),
             array('/terms', ''),
             array('/terms/', ''),
             array('/terms//', '/'),
