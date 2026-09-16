@@ -506,12 +506,13 @@ class MyUnaWorldModule extends BxDolModule
 
     public function saveLifecycleSettings(array $aInput)
     {
+        $aCurrent = $this->getLifecycleSettings();
         $aSettings = array(
             'visitor_gate_enabled' => !empty($aInput['visitor_gate_enabled']),
             'backup_before_install' => !empty($aInput['backup_before_install']),
             'backup_before_uninstall' => !empty($aInput['backup_before_uninstall']),
             'block_on_failure' => !empty($aInput['block_on_failure']),
-            'upgrade_dedupe_seconds' => 900,
+            'upgrade_dedupe_seconds' => $aCurrent['upgrade_dedupe_seconds'],
             'retention_max_archives' => isset($aInput['retention_max_archives'])
                 ? max(0, min(1000, (int)$aInput['retention_max_archives']))
                 : 0,

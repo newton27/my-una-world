@@ -227,6 +227,16 @@ try {
     muw_switch_assert_same(true, strpos($sOffHtml, 'Enable Visitor Gate') !== false, 'Studio renders exact Visitor Gate label from language key');
     muw_switch_assert_same(true, strpos($sOffHtml, 'Restricts logged-out visitors to Home, Login, Create Account, Forgot Password, Terms, and Privacy. Logged-in members and administrators remain unrestricted.') !== false, 'Studio renders exact Visitor Gate description from language key');
 
+    file_put_contents($sTempRoot . '/.module_lifecycle_settings.json', json_encode(array(
+        'visitor_gate_enabled' => true,
+        'backup_before_install' => false,
+        'backup_before_uninstall' => true,
+        'block_on_failure' => false,
+        'upgrade_dedupe_seconds' => 600,
+        'retention_max_archives' => 17,
+        'retention_max_age_days' => 45,
+    )));
+
     muw_switch_post_settings($oModule, array(
         'backup_before_uninstall' => '1',
         'retention_max_archives' => '17',
@@ -239,7 +249,7 @@ try {
     muw_switch_assert_same(false, $aAfterOffPost['block_on_failure'], 'Studio OFF save preserves unchecked block-on-failure');
     muw_switch_assert_same(17, $aAfterOffPost['retention_max_archives'], 'Studio OFF save preserves archive retention');
     muw_switch_assert_same(45, $aAfterOffPost['retention_max_age_days'], 'Studio OFF save preserves age retention');
-    muw_switch_assert_same(900, $aAfterOffPost['upgrade_dedupe_seconds'], 'Studio OFF save preserves upgrade dedupe');
+    muw_switch_assert_same(600, $aAfterOffPost['upgrade_dedupe_seconds'], 'Studio OFF save preserves custom upgrade dedupe');
 
     muw_switch_post_settings($oModule, array(
         'visitor_gate_enabled' => '1',
@@ -249,6 +259,7 @@ try {
     ));
     $aAfterOnPost = $oModule->getLifecycleSettings();
     muw_switch_assert_same(true, isset($aAfterOnPost['visitor_gate_enabled']) ? $aAfterOnPost['visitor_gate_enabled'] : null, 'checked Studio checkbox restores Visitor Gate ON');
+    muw_switch_assert_same(600, $aAfterOnPost['upgrade_dedupe_seconds'], 'Studio ON save preserves custom upgrade dedupe');
 
     BxDolModule::$testInstance = $oModule;
     $_SERVER['REQUEST_METHOD'] = 'GET';
