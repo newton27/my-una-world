@@ -69,7 +69,9 @@ class VisitorGateHttpTestModule extends MyUnaWorldModule
     }
 }
 
-$oModule = new VisitorGateHttpTestModule();
+$bBaseMode = isset($_SERVER['HTTP_X_MUW_TEST_MODE']) &&
+    $_SERVER['HTTP_X_MUW_TEST_MODE'] === 'base';
+$oModule = $bBaseMode ? new MyUnaWorldModule() : new VisitorGateHttpTestModule();
 $sError = '';
 
 try {
@@ -78,6 +80,12 @@ try {
 catch (Throwable $e) {
     http_response_code(500);
     $sError = get_class($e) . ': ' . $e->getMessage();
+}
+
+if ($bBaseMode) {
+    header('Content-Type: text/plain');
+    echo 'visitor-gate-continued';
+    return;
 }
 
 $sTarget = count($oModule->redirects) > 0 ? (string)$oModule->redirects[0] : '';

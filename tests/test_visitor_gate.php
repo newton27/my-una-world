@@ -176,6 +176,33 @@ function muw_assert_http_redirect($iPort, $sMethod, $sUri, $sExpected, $sLabel, 
     muw_assert_same($sExpected, $sActual, $sLabel);
 }
 
+function muw_assert_production_http_redirect($iPort)
+{
+    $aResponse = muw_http_request($iPort, 'GET', '/groups-home', array(
+        'Accept' => 'text/html,application/xhtml+xml',
+        'Sec-Fetch-Mode' => 'navigate',
+        'Sec-Fetch-Dest' => 'document',
+        'X-MUW-Test-Auth' => 'guest',
+        'X-MUW-Test-Mode' => 'base',
+    ));
+
+    muw_assert_same(
+        1,
+        preg_match('/^HTTP\/1\.[01] 302(?: |$)/', $aResponse['status']),
+        'production gate sends temporary HTTP redirect'
+    );
+    muw_assert_same(
+        '/',
+        isset($aResponse['headers']['location']) ? $aResponse['headers']['location'] : null,
+        'production gate redirects to UNA root'
+    );
+    muw_assert_same(
+        false,
+        strpos($aResponse['body'], 'visitor-gate-continued') !== false,
+        'production gate terminates the blocked request'
+    );
+}
+
 // A broken or absent CLI guard would redirect this blocked path in the test process.
 $bGateAvailable = method_exists('MyUnaWorldModule', 'handleVisitorGate');
 if ($bGateAvailable) {
@@ -191,8 +218,7 @@ else {
     muw_assert_same(true, false, 'MyUnaWorldModule exposes handleVisitorGate');
 }
 
-if ($bGateAvailable) {
-    $iPort = muw_find_free_port();
+$iPort = muw_find_free_port();
     $sRouter = __DIR__ . '/fixtures/visitor_gate_http.php';
     $aCommand = array(PHP_BINARY, '-d', 'display_errors=1', '-S', '127.0.0.1:' . $iPort, $sRouter);
     $aPipes = array();
@@ -214,12 +240,16 @@ if ($bGateAvailable) {
         try {
             muw_wait_for_server($iPort);
 
+        muw_assert_production_http_redirect($iPort);
+
         $aNavigationHeaders = array(
             'Accept' => 'text/html,application/xhtml+xml',
             'Sec-Fetch-Mode' => 'navigate',
             'Sec-Fetch-Dest' => 'document',
             'X-MUW-Test-Auth' => 'guest',
         );
+
+        if ($bGateAvailable) {
 
         $aGuestCases = array(
             array('/', ''),
@@ -347,6 +377,7 @@ if ($bGateAvailable) {
             );
         }
         }
+        }
         catch (Throwable $e) {
             $aFailures[] = 'HTTP fixture failure: ' . $e->getMessage();
         }
@@ -358,7 +389,6 @@ if ($bGateAvailable) {
             }
             proc_close($hServer);
         }
-    }
 }
 
 $oSpy = new VisitorGateDispatchSpy();

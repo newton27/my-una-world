@@ -13,13 +13,17 @@ class MyUnaWorldAlertsResponse extends BxDolAlertsResponse
         if (!$oAlert || $oAlert->sUnit !== 'system')
             return;
 
-        if ($oAlert->sAction !== 'before_install' && $oAlert->sAction !== 'before_uninstall')
-            return;
-
         $oModule = BxDolModule::getInstance('my_una_world');
-        if (!$oModule || !method_exists($oModule, 'handleModuleLifecycleAlert'))
+        if (!$oModule)
             return;
 
-        $oModule->handleModuleLifecycleAlert($oAlert);
+        if ($oAlert->sAction === 'before_install' || $oAlert->sAction === 'before_uninstall') {
+            if (method_exists($oModule, 'handleModuleLifecycleAlert'))
+                $oModule->handleModuleLifecycleAlert($oAlert);
+            return;
+        }
+
+        if ($oAlert->sAction === 'design_included' && method_exists($oModule, 'handleVisitorGate'))
+            $oModule->handleVisitorGate();
     }
 }

@@ -2,6 +2,148 @@
 
 class MyUnaWorldModule extends BxDolModule
 {
+    protected function _getVisitorGatePath()
+    {
+        if (!isset($_SERVER['REQUEST_URI']) || !is_string($_SERVER['REQUEST_URI']))
+            return null;
+
+        try {
+            $sPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        }
+        catch (Throwable $e) {
+            return null;
+        }
+
+        if (!is_string($sPath) || $sPath === '')
+            return null;
+
+        if ($sPath[0] !== '/')
+            $sPath = '/' . $sPath;
+
+        if ($sPath !== '/' && substr($sPath, -1) === '/' && substr($sPath, -2) !== '//') {
+            $sWithoutSlash = substr($sPath, 0, -1);
+            if (strpos(basename($sWithoutSlash), '.') === false)
+                $sPath = $sWithoutSlash;
+        }
+
+        return $sPath;
+    }
+
+    protected function _isVisitorGatePublicPath($sPath)
+    {
+        return in_array($sPath, array(
+            '/',
+            '/login',
+            '/member.php',
+            '/create-account',
+            '/forgot-password',
+            '/terms',
+            '/privacy',
+        ), true);
+    }
+
+    protected function _shouldVisitorGateInspectRequest()
+    {
+        if (!isset($_SERVER['REQUEST_METHOD']) || !is_string($_SERVER['REQUEST_METHOD']))
+            return false;
+
+        $sMethod = strtoupper($_SERVER['REQUEST_METHOD']);
+        if ($sMethod !== 'GET' && $sMethod !== 'HEAD')
+            return false;
+
+        try {
+            if (function_exists('bx_is_dynamic_request') && bx_is_dynamic_request())
+                return false;
+            if (function_exists('bx_is_htmx_request') && bx_is_htmx_request())
+                return false;
+            if (function_exists('bx_is_api') && bx_is_api())
+                return false;
+        }
+        catch (Throwable $e) {
+            return false;
+        }
+
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            is_string($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0)
+            return false;
+
+        $bHasFetchMode = isset($_SERVER['HTTP_SEC_FETCH_MODE']);
+        $bHasFetchDest = isset($_SERVER['HTTP_SEC_FETCH_DEST']);
+        if ($bHasFetchMode || $bHasFetchDest) {
+            if (!$bHasFetchMode || !$bHasFetchDest ||
+                !is_string($_SERVER['HTTP_SEC_FETCH_MODE']) ||
+                !is_string($_SERVER['HTTP_SEC_FETCH_DEST']))
+                return false;
+
+            return strcasecmp($_SERVER['HTTP_SEC_FETCH_MODE'], 'navigate') === 0 &&
+                in_array(strtolower($_SERVER['HTTP_SEC_FETCH_DEST']), array('document', 'iframe', 'frame'), true);
+        }
+
+        if (!isset($_SERVER['HTTP_ACCEPT']) || !is_string($_SERVER['HTTP_ACCEPT']))
+            return false;
+
+        return preg_match(
+            '/(?:^|,)\s*(?:text\/html|application\/xhtml\+xml)(?:\s*;[^,]*)?(?:,|$)/i',
+            $_SERVER['HTTP_ACCEPT']
+        ) === 1;
+    }
+
+    protected function _redirectGuestToHome()
+    {
+        if (!defined('BX_DOL_URL_ROOT') || headers_sent())
+            return;
+
+        $sRoot = BX_DOL_URL_ROOT;
+        if (!is_string($sRoot) || $sRoot === '' || preg_match('/[\r\n]/', $sRoot))
+            return;
+
+        try {
+            $aRoot = parse_url($sRoot);
+        }
+        catch (Throwable $e) {
+            return;
+        }
+
+        if ($aRoot === false || ($sRoot[0] !== '/' &&
+            (!isset($aRoot['scheme']) || !in_array(strtolower($aRoot['scheme']), array('http', 'https'), true))))
+            return;
+
+        header('Location: ' . $sRoot, true, 302);
+        exit;
+    }
+
+    public function handleVisitorGate()
+    {
+        if (PHP_SAPI === 'cli')
+            return;
+
+        if (!function_exists('isLogged'))
+            return;
+
+        try {
+            $bLogged = isLogged();
+        }
+        catch (Throwable $e) {
+            return;
+        }
+
+        if (!is_bool($bLogged) || $bLogged)
+            return;
+
+        if (!$this->_shouldVisitorGateInspectRequest())
+            return;
+
+        $sPath = $this->_getVisitorGatePath();
+        if ($sPath === null)
+            return;
+
+        if ($this->_isVisitorGatePublicPath($sPath))
+            return;
+
+        $this->_redirectGuestToHome();
+    }
+
     protected function _getBackupEngine()
     {
         $sBackupClass = BX_DIRECTORY_PATH_MODULES . 'newton/my_una_world/classes/MyUnaWorldBackup.php';
