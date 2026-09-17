@@ -89,6 +89,32 @@ if ($sSql === false) {
     $aFailures[] = 'Missing updater SQL: ' . $sSqlPath;
 }
 else {
+    // UNA 15 BxDolDb::executeSQL trims each line and concatenates without
+    // inserting spaces (inc/classes/BxDolDb.php). Capture the actual queries
+    // presented to MySQL so line breaks cannot join SQL tokens accidentally.
+    $aLoadedQueries = array();
+    $sLoadedQuery = '';
+    foreach (explode("\n", $sSql) as $sLine) {
+        $sLine = trim($sLine);
+        if ($sLine === '' || $sLine[0] === '#' || substr($sLine, 0, 2) === '--')
+            continue;
+        $sLoadedQuery .= $sLine;
+        if (substr($sLine, -1) !== ';')
+            continue;
+        $aLoadedQueries[] = preg_replace('/\s+/', ' ', trim($sLoadedQuery));
+        $sLoadedQuery = '';
+    }
+    muw_updater_assert_same(2, count($aLoadedQueries), 'native SQL loader emits two complete statements');
+    muw_updater_assert_same(
+        "SET @iHandler = (SELECT `id` FROM `sys_alerts_handlers` WHERE `name` = 'my_una_world_lifecycle' LIMIT 1);",
+        isset($aLoadedQueries[0]) ? $aLoadedQueries[0] : null,
+        'native SQL loader preserves handler lookup token boundaries'
+    );
+    muw_updater_assert_same(
+        "INSERT INTO `sys_alerts` (`unit`, `action`, `handler_id`) SELECT 'system', 'design_included', @iHandler WHERE @iHandler IS NOT NULL AND NOT EXISTS (SELECT 1 FROM `sys_alerts` WHERE `unit` = 'system' AND `action` = 'design_included' AND `handler_id` = @iHandler);",
+        isset($aLoadedQueries[1]) ? $aLoadedQueries[1] : null,
+        'native SQL loader preserves idempotent alert insert token boundaries'
+    );
     muw_updater_assert_same(1, substr_count($sSql, "'my_una_world_lifecycle'"), 'updater locates the existing handler once');
     muw_updater_assert_same(2, substr_count($sSql, "'design_included'"), 'updater inserts and de-duplicates design_included');
     muw_updater_assert_same(true, stripos($sSql, 'NOT EXISTS') !== false, 'updater SQL is idempotent');
