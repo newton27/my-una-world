@@ -3,14 +3,12 @@
 **Vendor:** MyUNAWorld  
 **Platform:** UNA CMS  
 **Module:** `my_una_world`  
-**Current version:** 1.3.3 candidate
+**Current version:** 1.3.4 candidate
 
-**Source status:** candidate 1.3.3 adds the visitor navigation gate and its
-native 1.3.2-to-1.3.3 updater on top of source that includes unreleased
-September 11 hotfixes. The published 1.3.2 ZIP hashes below describe the
-historical release, not the current source. See
-[the 1.3.3 candidate notes](RELEASES/1.3.3.md) and
-[the hotfix notes](RELEASES/UNRELEASED.md).
+**Source status:** candidate 1.3.4 keeps the existing Visitor Gate and adds
+My UNA World maintenance-page controls modeled on the My UNA Doctor maintenance
+experience, together with a native 1.3.3-to-1.3.4 updater. The published 1.3.3
+release remains unchanged. See [the 1.3.4 candidate notes](RELEASES/1.3.4.md).
 
 My UNA World is a Studio-only backup, restore, verification and disaster-recovery manager for UNA CMS.
 
@@ -46,7 +44,7 @@ Compatibility-sensitive internal identifiers remain unchanged:
 
 These identifiers are not renamed solely for branding purposes.
 
-## Visitor navigation gate (1.3.3 candidate)
+## Visitor navigation gate (1.3.3+)
 
 For guests, the public routes are exactly `/`, `/login`, `/member.php`,
 `/create-account`, `/forgot-password`, `/terms` and `/privacy`. A single
@@ -79,6 +77,14 @@ lifecycle protection remains active. Then call
 context and make a fresh HTTP request. See the
 [1.3.3 candidate notes](RELEASES/1.3.3.md) for the exact SQL and deployment
 constraints.
+
+## Maintenance page controls (1.3.4 candidate)
+
+Studio → My UNA World → Settings now includes the maintenance presentation
+controls used by My UNA World workflows: header/footer visibility, heading,
+main message, patience message, return/status message, footer message, and the
+**Use My UNA World Page** switch. Visitor Gate remains a separate My UNA World
+setting and is not added to My UNA Doctor Settings.
 
 ## Release history baseline
 
