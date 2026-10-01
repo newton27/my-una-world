@@ -473,6 +473,14 @@ class MyUnaWorldModule extends BxDolModule
             'backup_before_install' => true,
             'backup_before_uninstall' => true,
             'block_on_failure' => true,
+            'maintenance_show_header' => true,
+            'maintenance_show_footer' => true,
+            'maintenance_heading' => 'Scheduled Maintenance in Progress',
+            'maintenance_message' => 'Our site is temporarily unavailable while My UNA World performs a verified maintenance workflow. The public site will return automatically when maintenance is complete.',
+            'maintenance_patience' => 'We appreciate your patience.',
+            'maintenance_return_message' => 'Estimated return time is counting down live.',
+            'maintenance_footer_message' => 'Thank you for your patience while the verified workflow completes.',
+            'use_maintenance_page' => true,
             'upgrade_dedupe_seconds' => 900,
             'retention_max_archives' => 0,
             'retention_max_age_days' => 0,
@@ -492,6 +500,14 @@ class MyUnaWorldModule extends BxDolModule
             'backup_before_install' => !empty($aSaved['backup_before_install']),
             'backup_before_uninstall' => !empty($aSaved['backup_before_uninstall']),
             'block_on_failure' => !empty($aSaved['block_on_failure']),
+            'maintenance_show_header' => !isset($aSaved['maintenance_show_header']) || !empty($aSaved['maintenance_show_header']),
+            'maintenance_show_footer' => !isset($aSaved['maintenance_show_footer']) || !empty($aSaved['maintenance_show_footer']),
+            'maintenance_heading' => isset($aSaved['maintenance_heading']) ? (string)$aSaved['maintenance_heading'] : $aDefaults['maintenance_heading'],
+            'maintenance_message' => isset($aSaved['maintenance_message']) ? (string)$aSaved['maintenance_message'] : $aDefaults['maintenance_message'],
+            'maintenance_patience' => isset($aSaved['maintenance_patience']) ? (string)$aSaved['maintenance_patience'] : $aDefaults['maintenance_patience'],
+            'maintenance_return_message' => isset($aSaved['maintenance_return_message']) ? (string)$aSaved['maintenance_return_message'] : $aDefaults['maintenance_return_message'],
+            'maintenance_footer_message' => isset($aSaved['maintenance_footer_message']) ? (string)$aSaved['maintenance_footer_message'] : $aDefaults['maintenance_footer_message'],
+            'use_maintenance_page' => !isset($aSaved['use_maintenance_page']) || !empty($aSaved['use_maintenance_page']),
             'upgrade_dedupe_seconds' => isset($aSaved['upgrade_dedupe_seconds'])
                 ? max(60, min(3600, (int)$aSaved['upgrade_dedupe_seconds']))
                 : 900,
@@ -508,10 +524,22 @@ class MyUnaWorldModule extends BxDolModule
     {
         $aCurrent = $this->getLifecycleSettings();
         $aSettings = array(
-            'visitor_gate_enabled' => !empty($aInput['visitor_gate_enabled']),
+            // Visitor Gate is intentionally not exposed on the Settings page.
+            // Preserve its current state when ordinary settings are saved.
+            'visitor_gate_enabled' => array_key_exists('visitor_gate_enabled', $aInput)
+                ? !empty($aInput['visitor_gate_enabled'])
+                : !empty($aCurrent['visitor_gate_enabled']),
             'backup_before_install' => !empty($aInput['backup_before_install']),
             'backup_before_uninstall' => !empty($aInput['backup_before_uninstall']),
             'block_on_failure' => !empty($aInput['block_on_failure']),
+            'maintenance_show_header' => !empty($aInput['maintenance_show_header']),
+            'maintenance_show_footer' => !empty($aInput['maintenance_show_footer']),
+            'maintenance_heading' => isset($aInput['maintenance_heading']) ? trim((string)$aInput['maintenance_heading']) : $aCurrent['maintenance_heading'],
+            'maintenance_message' => isset($aInput['maintenance_message']) ? trim((string)$aInput['maintenance_message']) : $aCurrent['maintenance_message'],
+            'maintenance_patience' => isset($aInput['maintenance_patience']) ? trim((string)$aInput['maintenance_patience']) : $aCurrent['maintenance_patience'],
+            'maintenance_return_message' => isset($aInput['maintenance_return_message']) ? trim((string)$aInput['maintenance_return_message']) : $aCurrent['maintenance_return_message'],
+            'maintenance_footer_message' => isset($aInput['maintenance_footer_message']) ? trim((string)$aInput['maintenance_footer_message']) : $aCurrent['maintenance_footer_message'],
+            'use_maintenance_page' => !empty($aInput['use_maintenance_page']),
             'upgrade_dedupe_seconds' => $aCurrent['upgrade_dedupe_seconds'],
             'retention_max_archives' => isset($aInput['retention_max_archives'])
                 ? max(0, min(1000, (int)$aInput['retention_max_archives']))

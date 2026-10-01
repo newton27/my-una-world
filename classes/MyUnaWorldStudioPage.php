@@ -360,6 +360,62 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         );
 
         $sContent .= '<hr class="bx-def-hr bx-def-margin-sec-top bx-def-margin-sec-bottom">';
+        $sContent .= '<h3>Maintenance Page</h3>';
+        $sContent .= '<p class="bx-def-font-small">Use the same maintenance-page controls as My UNA Doctor for My UNA World workflows.</p>';
+
+        $sContent .= $this->_checkbox(
+            'maintenance_show_header',
+            'Show maintenance page header',
+            !empty($aSettings['maintenance_show_header']),
+            'Show the My UNA World branding and trust header on the public maintenance page.'
+        );
+
+        $sContent .= $this->_checkbox(
+            'maintenance_show_footer',
+            'Show maintenance page footer',
+            !empty($aSettings['maintenance_show_footer']),
+            'Show the closing My UNA World maintenance footer.'
+        );
+
+        $sContent .= $this->_textSetting(
+            'maintenance_heading',
+            'Maintenance heading',
+            $aSettings['maintenance_heading'],
+            'Personalize the main heading visitors see while maintenance is active.'
+        );
+        $sContent .= $this->_textSetting(
+            'maintenance_message',
+            'Main maintenance message',
+            $aSettings['maintenance_message'],
+            'Personalize the main message explaining the temporary maintenance period.'
+        );
+        $sContent .= $this->_textSetting(
+            'maintenance_patience',
+            'Patience message',
+            $aSettings['maintenance_patience'],
+            'Message displayed beneath the maintenance countdown.'
+        );
+        $sContent .= $this->_textSetting(
+            'maintenance_return_message',
+            'Return/status message',
+            $aSettings['maintenance_return_message'],
+            'Message shown beneath the countdown while the estimated return time is active.'
+        );
+        $sContent .= $this->_textSetting(
+            'maintenance_footer_message',
+            'Footer message',
+            $aSettings['maintenance_footer_message'],
+            'Personalize the closing message shown in the maintenance page footer.'
+        );
+
+        $sContent .= $this->_checkbox(
+            'use_maintenance_page',
+            'Use My UNA World Page',
+            !empty($aSettings['use_maintenance_page']),
+            "When enabled, My UNA World uses its branded maintenance page. When disabled, it preserves and uses the existing UNA maintenance page for the site."
+        );
+
+        $sContent .= '<hr class="bx-def-hr bx-def-margin-sec-top bx-def-margin-sec-bottom">';
         $sContent .= '<h3>' . $this->_h(_t('_my_una_world_retention')) . '</h3>';
         $sContent .= '<p class="bx-def-font-small">' .
             $this->_h(_t('_my_una_world_retention_desc')) . '</p>';
@@ -582,6 +638,14 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                         'backup_before_install' => isset($_POST['backup_before_install']),
                         'backup_before_uninstall' => isset($_POST['backup_before_uninstall']),
                         'block_on_failure' => isset($_POST['block_on_failure']),
+                        'maintenance_show_header' => isset($_POST['maintenance_show_header']),
+                        'maintenance_show_footer' => isset($_POST['maintenance_show_footer']),
+                        'maintenance_heading' => isset($_POST['maintenance_heading']) ? $_POST['maintenance_heading'] : '',
+                        'maintenance_message' => isset($_POST['maintenance_message']) ? $_POST['maintenance_message'] : '',
+                        'maintenance_patience' => isset($_POST['maintenance_patience']) ? $_POST['maintenance_patience'] : '',
+                        'maintenance_return_message' => isset($_POST['maintenance_return_message']) ? $_POST['maintenance_return_message'] : '',
+                        'maintenance_footer_message' => isset($_POST['maintenance_footer_message']) ? $_POST['maintenance_footer_message'] : '',
+                        'use_maintenance_page' => isset($_POST['use_maintenance_page']),
                         'retention_max_archives' => isset($_POST['retention_max_archives']) ? (int)$_POST['retention_max_archives'] : 0,
                         'retention_max_age_days' => isset($_POST['retention_max_age_days']) ? (int)$_POST['retention_max_age_days'] : 0,
                     ));
@@ -653,6 +717,15 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         return '<div class="bx-def-margin-bottom"><label><input type="checkbox" name="' .
             $this->_h($sName) . '" value="1" ' . ($bChecked ? 'checked' : '') . '> <strong>' .
             $this->_h($sCaption) . '</strong></label><br><span class="bx-def-font-small">' .
+            $this->_h($sDescription) . '</span></div>';
+    }
+
+    protected function _textSetting($sName, $sCaption, $sValue, $sDescription)
+    {
+        return '<div class="bx-def-margin-bottom"><label><strong>' .
+            $this->_h($sCaption) . '</strong><br><input type="text" name="' .
+            $this->_h($sName) . '" value="' . $this->_h($sValue) .
+            '" style="width:100%;max-width:900px"></label><br><span class="bx-def-font-small">' .
             $this->_h($sDescription) . '</span></div>';
     }
 
