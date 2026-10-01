@@ -1,4 +1,4 @@
-MY UNA WORLD 1.3.2
+MY UNA WORLD 1.3.4
 ==================
 
 Studio-only UNA 15 backup module.
@@ -308,3 +308,16 @@ IMPORTANT
 - This is a vendor-identity/version maintenance release; backup, restore,
   rollback, retention and background-worker behavior are otherwise unchanged.
 
+
+
+1.3.4 MAINTENANCE PAGE CONTROLS
+-------------------------------
+- Keeps the existing My UNA World Visitor Gate setting and behavior.
+- Adds My UNA World maintenance-page presentation controls to Studio Settings.
+- Header and footer visibility can be enabled or disabled independently.
+- Administrators can personalize the maintenance heading, main message,
+  patience message, return/status message, and footer message.
+- Adds the "Use My UNA World Page" switch so My UNA World can use its branded
+  maintenance presentation or preserve the site's existing UNA maintenance page.
+- Does not add Visitor Gate to My UNA Doctor Settings.
+- Includes a native UNA updater from exactly 1.3.3 to 1.3.4.
