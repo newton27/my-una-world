@@ -9,7 +9,9 @@ function getParam($name){return 'on';}
 function bx_append_url_params($url,$params){return $url.'&'.http_build_query($params);}
 function _t($key){return array('_my_una_world_backups'=>'Backups','_my_una_world_backups_desc'=>'Manage backup archives and recovery actions.','_my_una_world_backup_active'=>'Backup in progress')[$key]??$key;}
 class BackupPageModule {
+    public $_aModule=array('name'=>'my_una_world','version'=>'1.3.5');
     public $active=false;
+    function getBackupRoot(){return '/private/backups/';}
     function getBackups($limit){
         $start=strtotime('2026-11-01 14:00:00 UTC');
         $base=array('mode'=>'full','status'=>'complete','archive_size'=>122269928,'modules_count'=>85,'database_tables'=>1123,'files_count'=>5310,'bytes_source'=>184215435,'message'=>'Manual backup.','archive_path'=>'/nonexistent/backup.zip');
@@ -24,7 +26,10 @@ class BackupPageModule {
     function getRecentBackupJobs($limit){return array();}
 }
 require __DIR__.'/../../classes/MyUnaWorldStudioPage.php';
-class BackupPageSubject extends MyUnaWorldStudioPage {public function renderBackups(){return $this->getBackups();}}
+class BackupPageSubject extends MyUnaWorldStudioPage {
+    public function renderBackups(){return $this->getBackups();}
+    public function renderOverview(){return $this->getOverview();}
+}
 BxDolModule::$instance=new BackupPageModule();
 $page=new BackupPageSubject('my_una_world','backups');
 return $page;

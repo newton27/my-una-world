@@ -3,13 +3,14 @@
 **Vendor:** MyUNAWorld  
 **Platform:** UNA CMS  
 **Module:** `my_una_world`  
-**Current version:** 1.3.4 candidate
+**Current version:** 1.3.5
 
-**Source status:** candidate 1.3.4 keeps the existing Visitor Gate and adds
-My UNA World maintenance-page controls modeled on the My UNA Doctor maintenance
-experience, backup start/completion times, phase timings and database progress,
-together with a native 1.3.3-to-1.3.4 updater. The published 1.3.3
-release remains unchanged. See [the 1.3.4 candidate notes](RELEASES/1.3.4.md).
+**Price:** Free
+
+Version 1.3.5 adds backup start/completion times, duration, phase timings and
+live database table/row progress. It includes a full installer and separate
+native updaters from 1.3.3 and 1.3.4. Existing Visitor Gate and maintenance-page
+controls remain available.
 
 My UNA World is a Studio-only backup, restore, verification and disaster-recovery manager for UNA CMS.
 
@@ -31,6 +32,39 @@ It is designed to protect UNA sites before risky changes, create verified recove
 - SHA-256 integrity verification.
 - Backup manifests and environment reports.
 - Background manual backups with live Studio progress.
+- UTC backup start/completion times and elapsed duration.
+- Recorded backup phase durations and slowest database tables.
+
+## Install or update
+
+For a fresh installation, upload `My-UNA-World-1.3.5.zip` through UNA Studio's
+native Apps uploader, then install and enable My UNA World. The package contains
+one top-level `my_una_world/` folder and installs under
+`modules/newton/my_una_world/`.
+
+For an existing installation, check the version shown in Studio and use the
+matching native updater:
+
+| Installed version | Update package |
+| --- | --- |
+| 1.3.3 | `My-UNA-World-Update-1.3.3-to-1.3.5.zip` |
+| 1.3.4 | `My-UNA-World-Update-1.3.4-to-1.3.5.zip` |
+
+Use UNA Studio's native upload/update flow. Earlier versions must first follow
+their matching update chain to 1.3.3. After installation or update, confirm
+Overview shows 1.3.5, run **Inventory Test**, and then create a full backup.
+
+## Backup timing and progress
+
+Backups shows **Started**, **Completed** and **Duration** for each archive.
+Times are UTC. While a backup runs, the page shows its start time, elapsed
+duration and current stage. During database export, progress identifies the
+current table and exported row count. Details for completed backups include
+recorded phase durations and the slowest database tables.
+
+Older backups use existing completion records when available; missing timings
+show **Not recorded**. Existing archives are preserved. These measurements
+help identify slow stages; database export and restore algorithms are unchanged.
 
 ## Project identity
 
@@ -79,43 +113,13 @@ context and make a fresh HTTP request. See the
 [1.3.3 candidate notes](RELEASES/1.3.3.md) for the exact SQL and deployment
 constraints.
 
-## Maintenance page controls (1.3.4 candidate)
+## Maintenance page controls (1.3.4+)
 
 Studio → My UNA World → Settings now includes the maintenance presentation
 controls used by My UNA World workflows: header/footer visibility, heading,
 main message, patience message, return/status message, footer message, and the
 **Use My UNA World Page** switch. Visitor Gate remains a separate My UNA World
-setting and is not added to My UNA Doctor Settings.
-
-## Release history baseline
-
-The exact original **1.3.1 FINAL** source imported from `My-UNA-World-1.3.1-FINAL.zip` is preserved on branch:
-
-`release-1.3.1-final`
-
-Original package SHA-256:
-
-`884267e3c34c9633a37b18963964a85a04a0ff5f6632defeb34b9283574a39c9`
-
-The `main` branch advances that verified baseline to **1.3.2**, whose purpose is the vendor-identity migration from `NewtronJax` to **MyUNAWorld** while preserving technical compatibility.
-
-## 1.3.2 release artifacts
-
-Fresh-install package:
-
-`My-UNA-World-1.3.2.zip`
-
-SHA-256:
-
-`5546eb52134cf29d4fb66189442485a73511460790625d316d82263907df60e2`
-
-Native UNA updater from 1.3.1:
-
-`My-UNA-World-Update-1.3.1-to-1.3.2.zip`
-
-SHA-256:
-
-`e6db001ae7cc636eef31204902ebf68bad85868777c16d57169f4d22f6754560`
+setting.
 
 ## UNA Marketplace release standard
 
@@ -126,6 +130,7 @@ Every MyUNAWorld UNA module release must include and verify:
 - Marketplace product description.
 - Exact Marketplace internal Name matching the module's `install/config.php` `name` value.
 - Correct current version and vendor identity.
+- Full installer ZIP and native updater ZIPs for supported prior versions.
 - Studio → Apps Market → Downloaded product-information popup.
 - Product screenshots suitable for the native UNA Info popup.
 - Clean installation/update validation on the designated UNA test environment.

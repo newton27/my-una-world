@@ -6,6 +6,7 @@
 - **Marketplace Name:** `my_una_world`
 - **Vendor:** MyUNAWorld
 - **Platform:** UNA CMS
+- **Price:** Free
 
 The Marketplace **Name** must exactly match the module's internal `install/config.php` `name` value. Do not rename `my_una_world` for branding purposes.
 
@@ -33,8 +34,8 @@ Before release, confirm that:
 - Product screenshots suitable for the native Info popup.
 - Short description.
 - Full Marketplace description.
-- Current module package.
-- Matching update package(s), when applicable.
+- Full installer ZIP for the current version.
+- Native updater ZIPs for each supported prior version.
 - Release checksum.
 
 ## Vendor standard

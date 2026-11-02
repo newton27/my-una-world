@@ -1,5 +1,4 @@
 <?php defined('BX_DOL') or die('hack attempt');
-require_once __DIR__ . '/MyUnaWorldBackupTiming.php';
 
 class MyUnaWorldStudioPage extends BxTemplStudioModule
 {
@@ -110,44 +109,35 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
 
         $sContent = $this->_notice();
         $sContent .= $this->_backgroundJobPanel();
-        $sContent .= $this->_backupPageStyles();
-        $sContent .= '<div class="bx-def-padding muw-backups-page">';
-        $sContent .= '<header class="muw-backups-header"><div><h2>' . $this->_h(_t('_my_una_world_backups')) . '</h2>';
-        $sContent .= '<p>Backup history, completion times, and recovery controls. All times are UTC.</p></div><div class="muw-backups-tools">';
-        $sContent .= $this->_postButton('backups', 'backup_full', 'Create Full Backup', true);
-        $sContent .= $this->_postButton('backups', 'backup_inventory', 'Inventory Test', false);
-        $sContent .= '</div></header>';
+        $sContent .= '<div class="bx-def-padding">';
+        $sContent .= '<h2>' . $this->_h(_t('_my_una_world_backups')) . '</h2>';
+        $sContent .= '<p>' . $this->_h(_t('_my_una_world_backups_desc')) . '</p>';
 
         if (!$aBackups) {
             $sContent .= '<p class="bx-def-font-small">' . $this->_h(_t('_my_una_world_no_backups')) . '</p>';
         }
         else {
-            $sContent .= '<div class="muw-backup-grid">';
+            $sContent .= '<div class="bx-def-margin-top" style="overflow:auto">';
+            $sContent .= '<table style="width:100%;border-collapse:collapse">';
+            $sContent .= '<thead><tr>';
+            foreach (array('Date','Mode','Status','Size','Modules','DB objects','Files','Actions') as $sHead)
+                $sContent .= '<th style="text-align:left;padding:8px;border-bottom:1px solid currentColor">' . $this->_h($sHead) . '</th>';
+            $sContent .= '</tr></thead><tbody>';
+
             foreach ($aBackups as $a) {
                 $bProtected = isset($aProtected[$a['archive_name']]);
-                $aTiming = isset($a['timing']) ? $a['timing'] : MyUnaWorldBackupTiming::resolve($a);
-                $bComplete = $a['status'] === 'complete';
-                $sContent .= '<article class="muw-backup-card"><header class="muw-backup-card-head"><div><strong>' .
-                    ($a['mode'] === 'full' ? 'Full backup' : 'Inventory test') . '</strong><div class="muw-backup-file">' .
-                    $this->_h($a['archive_name'] ?: 'No completed archive') . '</div></div><span class="muw-backup-status ' .
-                    ($bComplete ? 'muw-complete' : 'muw-failed') . '">' . $this->_h(ucfirst($a['status'])) . '</span></header>';
-                if ($bProtected)
-                    $sContent .= '<p class="muw-backup-protected">Protected rollback safety backup</p>';
-                $sContent .= '<dl class="muw-backup-times">';
-                foreach (array('Started'=>MyUnaWorldBackupTiming::timestamp($aTiming['started_at']),
-                    'Completed'=>MyUnaWorldBackupTiming::timestamp($aTiming['completed_at']),
-                    'Duration'=>MyUnaWorldBackupTiming::duration($aTiming['duration_seconds'])) as $sLabel=>$sValue)
-                    $sContent .= '<div><dt>' . $sLabel . '</dt><dd>' . $this->_h($sValue) . '</dd></div>';
-                $sContent .= '</dl><div class="muw-backup-metrics">';
-                foreach (array('Archive'=>$this->_bytes($a['archive_size']), 'Files'=>number_format((int)$a['files_count']),
-                    'Modules'=>(int)$a['modules_count'], 'DB tables'=>(int)$a['database_tables']) as $sLabel=>$sValue)
-                    $sContent .= '<span><strong>' . $this->_h($sValue) . '</strong> ' . $sLabel . '</span>';
-                $sContent .= '</div>';
-                if (!empty($a['message']))
-                    $sContent .= '<p class="muw-backup-note">' . $this->_h($a['message']) . '</p>';
-                $sContent .= $this->_backupTimingDetails($aTiming);
-                $sContent .= '<div class="muw-backup-primary-actions">';
-                if ($bComplete) {
+                $sContent .= '<tr>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . $this->_h(date('Y-m-d H:i:s', (int)$a['created_at'])) . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . $this->_h($a['mode']) . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . $this->_h($a['status']) .
+                    ($bProtected ? '<br><strong>rollback safety</strong>' : '') . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . $this->_bytes($a['archive_size']) . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . (int)$a['modules_count'] . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . (int)$a['database_tables'] . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top">' . (int)$a['files_count'] . '</td>';
+                $sContent .= '<td style="padding:8px;vertical-align:top;min-width:330px">';
+
+                if ($a['status'] === 'complete') {
                     $sContent .= '<a class="bx-btn" href="' . $this->_h(BX_DOL_URL_ROOT .
                         'modules/newton/my_una_world/download.php?id=' . (int)$a['id']) . '">Download</a> ';
 
@@ -158,10 +148,8 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                     }
 
                     $sContent .= $this->_postButton('backups', 'inspect', 'Inspect', false, array('backup_id' => (int)$a['id']));
-                }
-                $sContent .= '</div><details class="muw-backup-recovery"><summary>Recovery actions</summary><div>';
-                if ($bComplete) {
-                    $sContent .= $this->_postButton('backups', 'dry_restore', 'Dry Run', false, array('backup_id' => (int)$a['id']));
+                    $sContent .= ' ' . $this->_postButton('backups', 'dry_restore', 'Dry Run', false, array('backup_id' => (int)$a['id']));
+
                     if ($a['mode'] === 'full') {
                         $sContent .= '<form method="post" action="' . $this->_h($this->_pageUrl('backups')) .
                             '" style="display:inline-block;margin:3px 0" onsubmit="return this.confirmation.value===\'RESTORE\' && confirm(\'Restore this backup? A fresh full safety backup is created first.\');">';
@@ -184,10 +172,13 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                     );
                 }
 
-                $sContent .= '</div></details></article>';
+                if (!empty($a['message']))
+                    $sContent .= '<div class="bx-def-font-small bx-def-margin-sec-top">' . $this->_h($a['message']) . '</div>';
+
+                $sContent .= '</td></tr>';
             }
 
-            $sContent .= '</div>';
+            $sContent .= '</tbody></table></div>';
         }
 
         if (is_array($this->_aPostResult))
@@ -198,49 +189,6 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         return BxDolStudioTemplate::getInstance()->parseHtmlByName('module.html', array(
             'content' => $sContent,
         ));
-    }
-
-    protected function _backupPageStyles()
-    {
-        return '<style>
-        .muw-backups-header,.muw-backup-card-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
-        .muw-backups-header{margin-bottom:22px;flex-wrap:wrap}.muw-backups-header h2{margin:0 0 8px}.muw-backups-header p{margin:0;opacity:.75}
-        .muw-backup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px}
-        .muw-backup-card{min-width:0;padding:20px;border:1px solid rgba(128,128,128,.3);border-radius:14px;background:rgba(128,128,128,.035)}
-        .muw-backup-file{font-size:.8em;opacity:.7;overflow-wrap:anywhere;margin-top:6px}.muw-backup-status{font-size:.8em;padding:5px 10px;border-radius:20px;white-space:nowrap}
-        .muw-complete{background:rgba(28,155,105,.13);color:#15946c}.muw-failed{background:rgba(205,78,70,.12);color:#cf625b}
-        .muw-backup-times{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}.muw-backup-times div:last-child{grid-column:1/-1}
-        .muw-backup-times dt{font-size:.8em;opacity:.65;margin-bottom:5px}.muw-backup-times dd{margin:0;font-variant-numeric:tabular-nums;font-weight:600;font-size:.93em}
-        .muw-backup-metrics{display:flex;gap:9px 15px;flex-wrap:wrap;padding:13px 0;border-top:1px solid rgba(128,128,128,.2);border-bottom:1px solid rgba(128,128,128,.2);font-size:.82em}
-        .muw-backup-metrics span{white-space:nowrap}.muw-backup-note{font-size:.85em;opacity:.75;overflow-wrap:anywhere}.muw-backup-protected{font-size:.85em;color:#b08831}
-        .muw-backup-primary-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:16px}
-        .muw-backup-recovery,.muw-backup-breakdown{margin-top:16px;border-top:1px solid rgba(128,128,128,.2);padding-top:12px;font-size:.88em}
-        .muw-backup-recovery summary,.muw-backup-breakdown summary{cursor:pointer}.muw-backup-recovery>div{margin-top:12px}
-        .muw-phase-list{display:grid;grid-template-columns:1fr auto;gap:7px 16px}.muw-phase-list dt,.muw-phase-list dd{margin:0}.muw-phase-list dd{font-variant-numeric:tabular-nums}
-        .muw-slow-tables{width:100%;font-size:.88em;table-layout:fixed}.muw-slow-tables caption{text-align:left;margin:12px 0 7px;font-weight:600}.muw-slow-tables th,.muw-slow-tables td{text-align:left;padding:5px 3px;overflow-wrap:anywhere}
-        @media(max-width:800px){.muw-backup-grid{grid-template-columns:1fr}.muw-backup-times{grid-template-columns:1fr}.muw-backup-card{padding:16px}}
-        </style>';
-    }
-
-    protected function _backupTimingDetails(array $aTiming)
-    {
-        if (empty($aTiming['phases']))
-            return '';
-        $aLabels = array('preparing'=>'Preparation','inventory'=>'Inventory','database'=>'Database export',
-            'module_files'=>'Module files','storage'=>'Storage files','archive'=>'ZIP finalization','validation'=>'ZIP validation','checksum'=>'Checksum');
-        $s = '<details class="muw-backup-breakdown"><summary>Timing breakdown</summary><dl class="muw-phase-list">';
-        foreach ($aTiming['phases'] as $sPhase=>$fSeconds) {
-            if (isset($aLabels[$sPhase]))
-                $s .= '<dt>' . $aLabels[$sPhase] . '</dt><dd>' . $this->_h(MyUnaWorldBackupTiming::duration($fSeconds)) . '</dd>';
-        }
-        $s .= '</dl>';
-        if (!empty($aTiming['slowest_tables'])) {
-            $s .= '<table class="muw-slow-tables"><caption>Slowest database tables</caption><thead><tr><th>Table</th><th>Rows</th><th>Time</th></tr></thead><tbody>';
-            foreach ($aTiming['slowest_tables'] as $aTable)
-                $s .= '<tr><td>' . $this->_h($aTable['table']) . '</td><td>' . number_format($aTable['rows']) . '</td><td>' . $this->_h(MyUnaWorldBackupTiming::duration($aTable['seconds'])) . '</td></tr>';
-            $s .= '</tbody></table>';
-        }
-        return $s . '</details>';
     }
 
     protected function getRecovery()
@@ -556,12 +504,6 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
             $iProgress . '%</span> · Job #' . $iId . ' · ' . $this->_h($aJob['mode']) .
             ' · <span id="muw-job-status">' . $this->_h($sStatus) . '</span></div>';
         $sContent .= '</div>';
-        $iStarted = isset($aJob['started_at']) ? (int)$aJob['started_at'] : 0;
-        $iFinished = isset($aJob['finished_at']) ? (int)$aJob['finished_at'] : 0;
-        $sContent .= '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:.85em">' .
-            '<span>Started: <strong id="muw-job-started">' . $this->_h($iStarted > 0 ? MyUnaWorldBackupTiming::timestamp($iStarted) : 'Waiting for worker') . '</strong></span>' .
-            '<span>Finished: <strong id="muw-job-finished">' . $this->_h($iFinished > 0 ? MyUnaWorldBackupTiming::timestamp($iFinished) : 'Pending') . '</strong></span>' .
-            '<span>Elapsed: <strong id="muw-job-duration">' . $this->_h($iStarted > 0 ? MyUnaWorldBackupTiming::duration(max(0,($iFinished ?: time())-$iStarted)) : 'Waiting for worker') . '</strong></span></div>';
 
         if ($bActive) {
             $sContent .= '<div class="bx-def-font-small bx-def-margin-sec-top"><strong>' .
@@ -576,15 +518,10 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
             $sContent .= '<script>(function(){' .
                 'var url=' . json_encode($sStatusUrl) . ';' .
                 'var timer=null;' .
-                'function stamp(n){return n>0?new Date(n*1000).toISOString().slice(0,19).replace("T"," ")+" UTC":"";}' .
-                'function elapsed(n){n=Math.max(0,Math.floor(n));return Math.floor(n/3600)+"h "+String(Math.floor(n%3600/60)).padStart(2,"0")+"m "+String(n%60).padStart(2,"0")+"s";}' .
                 'function poll(){fetch(url,{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json();}).then(function(d){' .
                 'if(!d||!d.ok||!d.job)return;' .
                 'var j=d.job,p=document.getElementById("muw-job-progress"),pc=document.getElementById("muw-job-percent"),st=document.getElementById("muw-job-status"),sg=document.getElementById("muw-job-stage");' .
                 'if(p)p.value=j.progress||0;if(pc)pc.textContent=(j.progress||0)+"%";if(st)st.textContent=j.status||"";if(sg)sg.textContent=(j.stage||"")+" · "+(j.message||"");' .
-                'var a=document.getElementById("muw-job-started"),b=document.getElementById("muw-job-finished"),c=document.getElementById("muw-job-duration");' .
-                'if(a)a.textContent=stamp(j.started_at)||"Waiting for worker";if(b)b.textContent=stamp(j.finished_at)||"Pending";' .
-                'if(c)c.textContent=j.started_at>0?elapsed((j.finished_at||d.server_time||Math.floor(Date.now()/1000))-j.started_at):"Waiting for worker";' .
                 'if(j.status==="complete"||j.status==="failed"){if(timer)clearInterval(timer);setTimeout(function(){window.location.replace(window.location.pathname+window.location.search);},1200);}' .
                 '}).catch(function(){});}' .
                 'timer=setInterval(poll,2000);poll();' .

@@ -1084,25 +1084,7 @@ class MyUnaWorldModule extends BxDolModule
 
     public function getBackups($iLimit = 20)
     {
-        require_once __DIR__ . '/MyUnaWorldBackupTiming.php';
-        $aBackups = $this->_oDb->getBackups($iLimit);
-        $sRoot = realpath($this->getBackupRoot());
-        foreach ($aBackups as &$aBackup) {
-            $aVerification = array();
-            $sName = isset($aBackup['archive_name']) ? (string)$aBackup['archive_name'] : '';
-            if ($sRoot !== false && preg_match('/\Amy_una_world_(?:full|inventory)_[0-9]{8}_[0-9]{6}\.zip\z/D', $sName)) {
-                $sSidecar = realpath($sRoot . DIRECTORY_SEPARATOR . $sName . '.verify.json');
-                if ($sSidecar !== false && dirname($sSidecar) === $sRoot && is_readable($sSidecar) &&
-                    is_file($sSidecar) && filesize($sSidecar) <= 262144) {
-                    $aDecoded = json_decode((string)file_get_contents($sSidecar), true);
-                    if (is_array($aDecoded))
-                        $aVerification = $aDecoded;
-                }
-            }
-            $aBackup['timing'] = MyUnaWorldBackupTiming::resolve($aBackup, $aVerification);
-        }
-        unset($aBackup);
-        return $aBackups;
+        return $this->_oDb->getBackups($iLimit);
     }
 
     public function getBackup($iId)
