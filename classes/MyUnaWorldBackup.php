@@ -7,6 +7,11 @@ class MyUnaWorldBackup
     protected $_sSiteRoot;
     protected $_sBackupRoot;
     protected $_iJobId = 0;
+    protected $_sPhase = '';
+    protected $_fPhaseStarted = 0;
+    protected $_aPhaseSeconds = array();
+    protected $_aSlowTables = array();
+    protected $_fLastDatabaseProgress = 0;
 
     public function __construct($oModule)
     {
@@ -46,6 +51,12 @@ class MyUnaWorldBackup
     {
         $sMode = $sMode === 'full' ? 'full' : 'inventory';
         $this->_iJobId = isset($aContext['job_id']) ? (int)$aContext['job_id'] : 0;
+        $fStarted = $this->_now();
+        $this->_aPhaseSeconds = array();
+        $this->_aSlowTables = array();
+        $this->_sPhase = 'preparing';
+        $this->_fPhaseStarted = $fStarted;
+        $this->_fLastDatabaseProgress = 0;
 
         $this->_progress(3, 'Preparing', 'Preparing the private work directory and backup metadata.');
 
@@ -55,7 +66,7 @@ class MyUnaWorldBackup
         @set_time_limit(0);
         @ignore_user_abort(true);
 
-        $iStarted = time();
+        $iStarted = (int)$fStarted;
         $sStamp = date('Ymd_His', $iStarted);
         $sArchiveName = 'my_una_world_' . $sMode . '_' . $sStamp . '.zip';
         $sArchivePath = $this->_sBackupRoot . DIRECTORY_SEPARATOR . $sArchiveName;
@@ -86,6 +97,7 @@ class MyUnaWorldBackup
         );
 
         try {
+            $this->_phase('inventory');
             $this->_progress(8, 'Inventory', 'Scanning installed UNA modules and database objects.');
 
             $aModules = $this->_getInstalledModules();
@@ -129,6 +141,7 @@ class MyUnaWorldBackup
 
             $sDbDump = $sWork . '/database.sql';
             if ($sMode === 'full') {
+                $this->_phase('database');
                 $this->_progress(15, 'Database', 'Exporting the UNA database to SQL.');
                 $aDbStats = $this->_dumpDatabase($sDbDump);
                 $aStats['database_tables'] = $aDbStats['tables'];
@@ -153,6 +166,7 @@ class MyUnaWorldBackup
             $oZip->addFile($sDbDump, 'database/database.sql');
 
             if ($sMode === 'full') {
+                $this->_phase('module_files');
                 $iModuleTotal = max(1, count($aModulePaths));
                 $iModuleDone = 0;
 
@@ -177,6 +191,7 @@ class MyUnaWorldBackup
                     $iModuleDone++;
                 }
 
+                $this->_phase('storage');
                 $this->_progress(72, 'Storage', 'Adding UNA storage and original media files.');
                 $sStorage = $this->_sSiteRoot . DIRECTORY_SEPARATOR . 'storage';
                 if (is_dir($sStorage))
@@ -184,15 +199,18 @@ class MyUnaWorldBackup
             }
 
             $this->_progress(85, 'Finalizing', 'Writing the backup manifest and finalizing the ZIP archive.');
-
-            $aStats['finished_at'] = date('c');
-            $aStats['duration_seconds'] = time() - $iStarted;
+            $this->_phase('archive');
+            $fPrepared = $this->_now();
+            $aStats['prepared_at'] = date('c', (int)$fPrepared);
+            $aStats['preparation_seconds'] = max(0, (int)$fPrepared - $iStarted);
+            $aStats['timing_scope'] = 'preparation_before_archive_finalization';
             $this->_writeJson($sWork . '/manifest.json', $aStats);
             $oZip->addFile($sWork . '/manifest.json', 'manifest.json');
 
             if (!$oZip->close())
                 throw new RuntimeException('ZIP archive could not be finalized.');
 
+            $this->_phase('validation');
             $this->_progress(92, 'Integrity check', 'Running ZIP consistency validation.');
 
             $oCheck = new ZipArchive();
@@ -201,10 +219,20 @@ class MyUnaWorldBackup
                 throw new RuntimeException('ZIP integrity validation failed with error code: ' . $iCheck);
             $oCheck->close();
 
+            $this->_phase('checksum');
             $this->_progress(96, 'Checksum', 'Calculating SHA-256 and writing verification sidecars.');
 
             $sSha = hash_file('sha256', $sArchivePath);
-            file_put_contents($sArchivePath . '.sha256', $sSha . '  ' . $sArchiveName . PHP_EOL);
+            if (!is_string($sSha) || strlen($sSha) !== 64 ||
+                file_put_contents($sArchivePath . '.sha256', $sSha . '  ' . $sArchiveName . PHP_EOL) === false)
+                throw new RuntimeException('Unable to record the completed archive checksum.');
+            $fFinished = $this->_now();
+            $this->_finishPhase($fFinished);
+            $iFinished = (int)$fFinished;
+            $aStats['finished_at'] = date('c', $iFinished);
+            $aStats['duration_seconds'] = max(0, $iFinished - $iStarted);
+            $aStats['timing_scope'] = 'archive_verified';
+            usort($this->_aSlowTables, function($a, $b) { return $b['seconds'] <=> $a['seconds']; });
 
             $aVerification = array(
                 'product' => 'My UNA World',
@@ -228,6 +256,13 @@ class MyUnaWorldBackup
                 'una_version' => function_exists('bx_get_ver') ? bx_get_ver() : '',
                 'php_version' => PHP_VERSION,
                 'stats' => $aStats,
+                'timing' => array(
+                    'version' => 1,
+                    'started_at' => $iStarted,
+                    'completed_at' => $iFinished,
+                    'phases' => $this->_aPhaseSeconds,
+                    'slowest_tables' => array_slice($this->_aSlowTables, 0, 10),
+                ),
             );
             $this->_writeJson($sArchivePath . '.verify.json', $aVerification);
 
@@ -288,6 +323,44 @@ class MyUnaWorldBackup
 
             throw $e;
         }
+    }
+
+    protected function _now()
+    {
+        return microtime(true);
+    }
+
+    protected function _finishPhase($now)
+    {
+        if ($this->_sPhase !== '') {
+            $elapsed = max(0, $now - $this->_fPhaseStarted);
+            $this->_aPhaseSeconds[$this->_sPhase] = round(($this->_aPhaseSeconds[$this->_sPhase] ?? 0) + $elapsed, 3);
+        }
+        $this->_sPhase = '';
+    }
+
+    protected function _phase($name)
+    {
+        $now = $this->_now();
+        $this->_finishPhase($now);
+        $this->_sPhase = $name;
+        $this->_fPhaseStarted = $now;
+    }
+
+    protected function _databaseProgress($table, $number, $total, $tableRows, $allRows, $force = false)
+    {
+        if ($this->_iJobId <= 0)
+            return;
+        $now = $this->_now();
+        if (!$force && $now - $this->_fLastDatabaseProgress < 5)
+            return;
+        $this->_fLastDatabaseProgress = $now;
+        $this->_progress(
+            min(31, 15 + (int)floor((max(1,$number) - 1) / max(1,$total) * 16)),
+            'Database',
+            'Table ' . $number . ' of ' . $total . ': ' . $table .
+            ' | Rows exported: ' . number_format($allRows) . ' (this table: ' . number_format($tableRows) . ').'
+        );
     }
 
     protected function _progress($iProgress, $sStage, $sMessage = '')
@@ -427,6 +500,10 @@ class MyUnaWorldBackup
         fwrite($h, "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\nSET SQL_MODE='NO_AUTO_VALUE_ON_ZERO';\n\n");
 
         $aObjects = $this->_getDatabaseObjects();
+        $iTableTotal = count(array_filter($aObjects, function($object) {
+            $values = array_values($object);
+            return !empty($values[0]) && strtoupper((string)($values[1] ?? 'BASE TABLE')) !== 'VIEW';
+        }));
         $iTables = 0;
         $iRowsTotal = 0;
         $aViews = array();
@@ -445,6 +522,9 @@ class MyUnaWorldBackup
             }
 
             $iTables++;
+            $fTableStarted = $this->_now();
+            $iTableRows = 0;
+            $this->_databaseProgress($sName, $iTables, $iTableTotal, 0, $iRowsTotal, true);
             $sIdent = $this->_quoteIdentifier($sName);
             $aCreate = $this->_oDb->getRow("SHOW CREATE TABLE " . $sIdent);
             $aCreateValues = is_array($aCreate) ? array_values($aCreate) : array();
@@ -483,12 +563,18 @@ class MyUnaWorldBackup
                         implode(',', $aValuesSql) . ");\n"
                     );
                     $iRowsTotal++;
+                    $iTableRows++;
                 }
+
+                $this->_databaseProgress($sName, $iTables, $iTableTotal, $iTableRows, $iRowsTotal);
 
                 $iOffset += count($aRows);
                 if (count($aRows) < $iChunk)
                     break;
             }
+
+            $this->_databaseProgress($sName, $iTables, $iTableTotal, $iTableRows, $iRowsTotal, true);
+            $this->_aSlowTables[] = array('table'=>$sName, 'rows'=>$iTableRows, 'seconds'=>round(max(0,$this->_now()-$fTableStarted),3));
 
             fwrite($h, "\n");
         }

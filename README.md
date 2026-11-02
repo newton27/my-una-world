@@ -7,7 +7,8 @@
 
 **Source status:** candidate 1.3.4 keeps the existing Visitor Gate and adds
 My UNA World maintenance-page controls modeled on the My UNA Doctor maintenance
-experience, together with a native 1.3.3-to-1.3.4 updater. The published 1.3.3
+experience, backup start/completion times, phase timings and database progress,
+together with a native 1.3.3-to-1.3.4 updater. The published 1.3.3
 release remains unchanged. See [the 1.3.4 candidate notes](RELEASES/1.3.4.md).
 
 My UNA World is a Studio-only backup, restore, verification and disaster-recovery manager for UNA CMS.

@@ -182,7 +182,17 @@ class MyUnaWorldDb extends BxDolModuleDb
     public function getBackups($iLimit = 20)
     {
         $iLimit = max(1, min(100, (int)$iLimit));
-        return $this->getAll("SELECT * FROM `my_una_world_backups` ORDER BY `id` DESC LIMIT " . $iLimit);
+        $this->ensureJobsTable();
+        return $this->getAll(
+            "SELECT b.*, j.`worker_completed_at` FROM `my_una_world_backups` b
+             LEFT JOIN (
+                 SELECT `backup_id`, `archive_name`, MAX(`finished_at`) AS `worker_completed_at`
+                 FROM `my_una_world_jobs`
+                 WHERE `status` = 'complete' AND `finished_at` >= `started_at` AND `started_at` > 0
+                 GROUP BY `backup_id`, `archive_name`
+             ) j ON j.`backup_id` = b.`id` AND j.`archive_name` = b.`archive_name`
+             ORDER BY b.`id` DESC LIMIT " . $iLimit
+        );
     }
 
     public function getBackup($iId)
