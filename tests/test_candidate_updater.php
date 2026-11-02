@@ -22,6 +22,7 @@ $files = array(
     'classes/MyUnaWorldRestore.php',
     'status.php',
     'install/config.php',
+    'template/images/icons/std-icon.svg',
 );
 $failures = array();
 $checks = 0;
