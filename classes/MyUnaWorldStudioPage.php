@@ -414,7 +414,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
 
         $sContent .= '<hr class="bx-def-hr bx-def-margin-sec-top bx-def-margin-sec-bottom">';
         $sContent .= '<h3>Maintenance Page</h3>';
-        $sContent .= '<p class="bx-def-font-small">Use the same maintenance-page controls as My UNA Doctor for My UNA World workflows.</p>';
+        $sContent .= '<p class="bx-def-font-small">Full backups automatically pause public access using UNA maintenance mode. Studio remains available. Public access returns when the backup finishes.</p>';
 
         $sContent .= $this->_checkbox(
             'maintenance_show_header',
@@ -465,7 +465,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
             'use_maintenance_page',
             'Use My UNA World Page',
             !empty($aSettings['use_maintenance_page']),
-            "When enabled, My UNA World uses its branded maintenance page. When disabled, it preserves and uses the existing UNA maintenance page for the site."
+            "Choose the branded My UNA World page or the existing UNA maintenance page. Public access is paused during full backups with either choice."
         );
 
         $sContent .= '<hr class="bx-def-hr bx-def-margin-sec-top bx-def-margin-sec-bottom">';

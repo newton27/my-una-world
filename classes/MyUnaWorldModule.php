@@ -295,6 +295,13 @@ class MyUnaWorldModule extends BxDolModule
 
     public function processPendingBackupJob()
     {
+        $this->_loadMaintenanceLease();
+        $aRecovery = MyUnaMaintenanceLease::recover(BX_DIRECTORY_PATH_ROOT);
+        if (!empty($aRecovery['busy']))
+            return false;
+        if (empty($aRecovery['ok']))
+            throw new RuntimeException('Interrupted maintenance needs recovery: ' . implode('; ', $aRecovery['errors']));
+
         $hLock = $this->_openQueueWorkerLock();
         if (!flock($hLock, LOCK_EX | LOCK_NB)) {
             fclose($hLock);
@@ -443,7 +450,42 @@ class MyUnaWorldModule extends BxDolModule
 
     public function createBackup($sMode = 'inventory', array $aContext = array())
     {
-        $aResult = $this->_getBackupEngine()->run($sMode, $aContext);
+        $oMaintenance = null;
+        $oFailure = null;
+        if ($sMode === 'full') {
+            $this->_loadMaintenanceLease();
+            $aSettings = $this->getLifecycleSettings();
+            $sHtml = null;
+            if (!empty($aSettings['use_maintenance_page'])) {
+                require_once __DIR__ . '/MyUnaWorldMaintenance.php';
+                $iEstimate = 600;
+                foreach ($this->getBackups(10) as $aBackup) {
+                    if (($aBackup['mode'] ?? '') === 'full' && ($aBackup['status'] ?? '') === 'complete'
+                        && ($aBackup['timing']['duration_seconds'] ?? 0) > 0) {
+                        $iEstimate = (int)$aBackup['timing']['duration_seconds'];
+                        break;
+                    }
+                }
+                $sHtml = MyUnaWorldMaintenance::buildPage($aSettings, time(), $iEstimate);
+            }
+            $oMaintenance = new MyUnaMaintenanceLease(BX_DIRECTORY_PATH_ROOT);
+            $aLease = $oMaintenance->begin($sHtml);
+            $aContext['maintenance_original_options'] = $aLease['original'];
+        }
+        try {
+            $aResult = $this->_getBackupEngine()->run($sMode, $aContext);
+        }
+        catch (Throwable $e) {
+            $oFailure = $e;
+            throw $e;
+        }
+        finally {
+            if ($oMaintenance !== null) {
+                $aRestored = $oMaintenance->finish();
+                if (empty($aRestored['ok']))
+                    throw new RuntimeException('Backup maintenance could not be restored: ' . implode('; ', $aRestored['errors']), 0, $oFailure);
+            }
+        }
 
         /*
          * Retention is intentionally skipped for pre-restore/rollback safety
@@ -464,6 +506,12 @@ class MyUnaWorldModule extends BxDolModule
         }
 
         return $aResult;
+    }
+
+    protected function _loadMaintenanceLease()
+    {
+        if (!class_exists('MyUnaMaintenanceLease', false))
+            require_once __DIR__ . '/MyUnaMaintenanceLease.php';
     }
 
     public function getLifecycleSettings()
