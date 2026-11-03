@@ -70,7 +70,7 @@ $sPackageConfig = $sRoot . '/install/config.php';
 $aConfig = null;
 require $sPackageConfig;
 $aPackageConfig = $aConfig;
-muw_updater_assert_same('1.3.3', isset($aPackageConfig['version']) ? $aPackageConfig['version'] : null, 'source package version');
+muw_updater_assert_same('1.3.5', isset($aPackageConfig['version']) ? $aPackageConfig['version'] : null, 'current candidate package version');
 muw_updater_assert_same('MyUNAWorld', isset($aPackageConfig['vendor']) ? $aPackageConfig['vendor'] : null, 'source package vendor remains unchanged');
 
 $sInstaller = $sUpdater . '/install/installer.php';
@@ -134,13 +134,50 @@ $aPayloadFiles = array(
     'install/sql/enable.sql',
 );
 
+// Immutable 1.3.3 source at release commit 1789fe2a4f9ce1dc37c00752a93cc811cc5cf61c.
+// Historical updater bytes must not follow later candidate changes.
+$aReleasedBlobs = array(
+    'classes/MyUnaWorldModule.php'=>'5456e1e79af6dbacd521775c22d487a6990e6d32',
+    'classes/MyUnaWorldAlertsResponse.php'=>'746e22789829b57154b5c81f8a360468e14c0dc2',
+    'classes/MyUnaWorldRestore.php'=>'c7070776d58120c1103d2a2d21c91b08c20f6f38',
+    'classes/MyUnaWorldStudioPage.php'=>'8cdb1d6e47724055d28d14d321e4304974b7b7ef',
+    'install/config.php'=>'262bc28bbd0a6e022554f0c3cc5d2c1a83e6cfe2',
+    'install/langs/en.xml'=>'f378f10f6a8888088af172542f02844b96644b1a',
+    'install/sql/enable.sql'=>'bc37313b5e41ea9df4f8f375d7aa4244e01cd081',
+);
 foreach ($aPayloadFiles as $sRelative) {
-    $sSource = $sRoot . '/' . $sRelative;
     $sPayload = $sUpdater . '/source/' . $sRelative;
+    $sBytes = is_file($sPayload) ? file_get_contents($sPayload) : false;
     muw_updater_assert_same(
-        is_file($sSource) ? hash_file('sha256', $sSource) : null,
-        is_file($sPayload) ? hash_file('sha256', $sPayload) : null,
-        'updater payload matches source for ' . $sRelative
+        $aReleasedBlobs[$sRelative],
+        $sBytes !== false ? sha1('blob ' . strlen($sBytes) . "\0" . $sBytes) : null,
+        'historical updater payload matches released 1.3.3 for ' . $sRelative
+    );
+}
+
+// Keep the 1.3.4 maintenance-controls candidate immutable at 4b150bb.
+$aMaintenanceBlobs = array(
+    'install/config.php' => 'aff97e09982068ddd2c0d6ecd77fc83db5a16c29',
+    'install/installer.php' => 'd60c34486b2c7ce5ec4e24e02a2802837cae120a',
+    'source/classes/MyUnaWorldModule.php' => '682c348b442d68e2e7bc0d308c6d5d5051d233d8',
+    'source/classes/MyUnaWorldStudioPage.php' => '1b1b458f2ef70edb8f1a52b0d3a86f87a12bc9af',
+    'source/install/config.php' => '056f6cacf6f120195579a6f1b6e2470e2f3a1482',
+);
+$sMaintenanceRoot = $sRoot . '/updates/1.3.3_1.3.4/';
+$aMaintenanceFiles = array();
+foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($sMaintenanceRoot, FilesystemIterator::SKIP_DOTS)) as $oFile) {
+    if ($oFile->isFile())
+        $aMaintenanceFiles[] = substr($oFile->getPathname(), strlen($sMaintenanceRoot));
+}
+sort($aMaintenanceFiles);
+muw_updater_assert_same(array_keys($aMaintenanceBlobs), $aMaintenanceFiles, 'historical 1.3.4 updater inventory is unchanged');
+foreach ($aMaintenanceBlobs as $sRelative => $sBlob) {
+    $sPayload = $sRoot . '/updates/1.3.3_1.3.4/' . $sRelative;
+    $sBytes = is_file($sPayload) ? file_get_contents($sPayload) : false;
+    muw_updater_assert_same(
+        $sBlob,
+        $sBytes !== false ? sha1('blob ' . strlen($sBytes) . "\0" . $sBytes) : null,
+        'historical updater preserves original 1.3.4 candidate for ' . $sRelative
     );
 }
 

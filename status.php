@@ -23,6 +23,7 @@ $aJob = $iId > 0 ? $oModule->getBackupJob($iId) : $oModule->getActiveBackupJob()
 if (!$aJob) {
     echo json_encode(array(
         'ok' => true,
+        'server_time' => time(),
         'job' => null,
         'worker' => $oModule->getBackgroundWorkerStatus(),
     ));
@@ -31,6 +32,7 @@ if (!$aJob) {
 
 echo json_encode(array(
     'ok' => true,
+    'server_time' => time(),
     'job' => array(
         'id' => (int)$aJob['id'],
         'created_at' => (int)$aJob['created_at'],
