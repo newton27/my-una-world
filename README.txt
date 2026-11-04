@@ -1,4 +1,4 @@
-MY UNA WORLD 1.3.6
+MY UNA WORLD 1.3.7
 ==================
 
 Free Studio-only backup, restore and recovery module for UNA 15.
@@ -7,7 +7,7 @@ Internal module name: my_una_world
 
 INSTALLATION
 ------------
-For a fresh installation, upload My-UNA-World-1.3.6.zip through UNA Studio's
+For a fresh installation, upload My-UNA-World-1.3.7.zip through UNA Studio's
 native Apps uploader, then install and enable My UNA World.
 
 The installer contains one top-level folder:
@@ -19,9 +19,9 @@ UPDATING AN EXISTING INSTALLATION
 --------------------------------
 Connect Studio App Store to the UNA Marketplace account that acquired this app.
 Open Updates and download the offered update, then apply it in Downloaded.
-For an installed 1.3.5, the native updater is:
-    My-UNA-World-Update-1.3.5-to-1.3.6.zip
-Versions 1.3.3 and 1.3.4 first follow their published updater to 1.3.5.
+For an installed 1.3.6, the native updater is:
+    My-UNA-World-Update-1.3.6-to-1.3.7.zip
+Versions 1.3.3 and 1.3.4 first update to 1.3.5, then 1.3.6 using the published routes.
 Older versions must follow their exact published update chain. Clients using
 Marketplace delivery do not manually upload module code to their servers.
 A direct package upload remains available for administrators who choose it.
@@ -39,7 +39,7 @@ replay its temporary lockout.
 
 FIRST BACKUP
 ------------
-1. Open Studio -> My UNA World and confirm Overview shows 1.3.6.
+1. Open Studio -> My UNA World and confirm Overview shows 1.3.7.
 2. Run Inventory Test first.
 3. When the inventory ZIP completes, choose Create Full Backup.
 4. Keep the backup ZIP, SHA-256 sidecar and Verify JSON together.

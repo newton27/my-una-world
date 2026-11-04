@@ -70,13 +70,13 @@ if (count($oDb->queries) !== 1) {
 }
 
 $aParams = $oDb->queries[0]['params'];
-if ($aParams !== array('version' => '1.3.6')) {
+if ($aParams !== array('version' => '1.3.7')) {
     fwrite(STDERR, 'Registration preservation passed unexpected parameters: ' . var_export($aParams, true) . ".\n");
     exit(1);
 }
 
 $aCompatibility = $oRestore->inspectCrossSiteCompatibility();
-if ($aCompatibility['can_restore'] || !in_array('1.3.6 only performs same-site restores. Backup host is backup.example.invalid and current host is current.example.invalid.', $aCompatibility['blocking_issues'], true)) {
+if ($aCompatibility['can_restore'] || !in_array('1.3.7 only performs same-site restores. Backup host is backup.example.invalid and current host is current.example.invalid.', $aCompatibility['blocking_issues'], true)) {
     fwrite(STDERR, "Cross-site restore must remain blocked with the current release identified.\n");
     exit(1);
 }

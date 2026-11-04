@@ -70,7 +70,7 @@ $sPackageConfig = $sRoot . '/install/config.php';
 $aConfig = null;
 require $sPackageConfig;
 $aPackageConfig = $aConfig;
-muw_updater_assert_same('1.3.6', isset($aPackageConfig['version']) ? $aPackageConfig['version'] : null, 'current candidate package version');
+muw_updater_assert_same('1.3.7', isset($aPackageConfig['version']) ? $aPackageConfig['version'] : null, 'current candidate package version');
 muw_updater_assert_same('MyUNAWorld', isset($aPackageConfig['vendor']) ? $aPackageConfig['vendor'] : null, 'source package vendor remains unchanged');
 
 $sInstaller = $sUpdater . '/install/installer.php';

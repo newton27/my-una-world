@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 root = Path(__file__).resolve().parents[1]
+subprocess.run([sys.executable, str(root / 'scripts/check-studio-ui-contract.py')], check=True)
 php = os.environ.get('PHP_BIN', 'php')
 tests = sorted((root / 'tests').glob('test_*.php'))
 for test in tests:
