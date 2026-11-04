@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources name="en" flag="gb" title="English">
     <string name="_my_una_world"><![CDATA[My UNA World]]></string>
-    <string name="_my_una_world_desc"><![CDATA[Studio-only backup of the UNA database, installed modules, and storage files.]]></string>
+    <string name="_my_una_world_backup_intro"><![CDATA[A site is only as safe as its last backup. This tool creates a complete copy of your UNA site from inside Studio, and it can run on its own whenever your site changes.]]></string>
+    <string name="_my_una_world_desc"><![CDATA[Your database, installed modules, and storage files, all safely covered.]]></string>
 
     <string name="_my_una_world_overview"><![CDATA[Overview]]></string>
     <string name="_my_una_world_backups"><![CDATA[Backups]]></string>

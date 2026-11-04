@@ -12,6 +12,7 @@ class MyUnaWorldBackup
     protected $_aPhaseSeconds = array();
     protected $_aSlowTables = array();
     protected $_fLastDatabaseProgress = 0;
+    protected $_aSnapshotOptionOverrides = array();
 
     public function __construct($oModule)
     {
@@ -57,6 +58,14 @@ class MyUnaWorldBackup
         $this->_sPhase = 'preparing';
         $this->_fPhaseStarted = $fStarted;
         $this->_fLastDatabaseProgress = 0;
+        $this->_aSnapshotOptionOverrides = array();
+        if (isset($aContext['maintenance_original_options'])) {
+            foreach (array('sys_maintenance_mode', 'sys_maintenance_mode_html', 'sys_template_cache_compress_enable') as $sOption) {
+                if (!isset($aContext['maintenance_original_options'][$sOption]) || !is_string($aContext['maintenance_original_options'][$sOption]))
+                    throw new RuntimeException('Original maintenance options are incomplete; backup refused.');
+                $this->_aSnapshotOptionOverrides[$sOption] = $aContext['maintenance_original_options'][$sOption];
+            }
+        }
 
         $this->_progress(3, 'Preparing', 'Preparing the private work directory and backup metadata.');
 
@@ -548,6 +557,10 @@ class MyUnaWorldBackup
                     break;
 
                 foreach ($aRows as $aRow) {
+                    // The archive must restore the state before this backup's
+                    // temporary public lockout, not strand the restored site.
+                    if ($sName === 'sys_options' && isset($aRow['name']) && array_key_exists($aRow['name'], $this->_aSnapshotOptionOverrides))
+                        $aRow['value'] = $this->_aSnapshotOptionOverrides[$aRow['name']];
                     $aColumns = array();
                     $aValuesSql = array();
 

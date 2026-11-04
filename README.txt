@@ -1,4 +1,4 @@
-MY UNA WORLD 1.3.5
+MY UNA WORLD 1.3.6
 ==================
 
 Free Studio-only backup, restore and recovery module for UNA 15.
@@ -7,7 +7,7 @@ Internal module name: my_una_world
 
 INSTALLATION
 ------------
-For a fresh installation, upload My-UNA-World-1.3.5.zip through UNA Studio's
+For a fresh installation, upload My-UNA-World-1.3.6.zip through UNA Studio's
 native Apps uploader, then install and enable My UNA World.
 
 The installer contains one top-level folder:
@@ -17,17 +17,29 @@ It installs under:
 
 UPDATING AN EXISTING INSTALLATION
 --------------------------------
-Check the currently installed version in Studio, then use its exact updater:
-- 1.3.3: My-UNA-World-Update-1.3.3-to-1.3.5.zip
-- 1.3.4: My-UNA-World-Update-1.3.4-to-1.3.5.zip
+Connect Studio App Store to the UNA Marketplace account that acquired this app.
+Open Updates and download the offered update, then apply it in Downloaded.
+For an installed 1.3.5, the native updater is:
+    My-UNA-World-Update-1.3.5-to-1.3.6.zip
+Versions 1.3.3 and 1.3.4 first follow their published updater to 1.3.5.
+Older versions must follow their exact published update chain. Clients using
+Marketplace delivery do not manually upload module code to their servers.
+A direct package upload remains available for administrators who choose it.
 
-Use UNA Studio's native upload/update flow. Earlier versions must follow their
-matching update chain to 1.3.3 first. This update replaces runtime files and
-clears the module cache; it does not change the database schema.
+FULL BACKUP MAINTENANCE
+------------------------
+Full backups pause public access through native UNA maintenance before export.
+Studio and administrators remain available. Normal completion and exceptions
+restore the exact prior maintenance configuration. The background worker recovers
+an interrupted process only after its private ownership lock is free. Existing
+maintenance is preserved. The branded-page checkbox changes the page, not whether
+public access is paused. Inventory tests do not interrupt the public site.
+Archives record the original maintenance options so restoring a backup does not
+replay its temporary lockout.
 
 FIRST BACKUP
 ------------
-1. Open Studio -> My UNA World and confirm Overview shows 1.3.5.
+1. Open Studio -> My UNA World and confirm Overview shows 1.3.6.
 2. Run Inventory Test first.
 3. When the inventory ZIP completes, choose Create Full Backup.
 4. Keep the backup ZIP, SHA-256 sidecar and Verify JSON together.
@@ -59,7 +71,7 @@ database tables.
 
 Older backups use existing completion records where available. Missing timings
 show Not recorded. Existing ZIPs are preserved. Timing identifies slow stages;
-the database export and restore algorithms are unchanged in this version.
+the normal database export remains unchanged except that temporary maintenance options are replaced with their original values in the snapshot.
 
 RESTORE AND RECOVERY
 --------------------

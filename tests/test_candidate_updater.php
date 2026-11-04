@@ -15,28 +15,31 @@ $root = dirname(__DIR__);
 $module = candidateConfig($root . '/install/config.php');
 $files = array(
     'classes/MyUnaWorldModule.php',
-    'classes/MyUnaWorldStudioPage.php',
     'classes/MyUnaWorldBackup.php',
-    'classes/MyUnaWorldBackupTiming.php',
-    'classes/MyUnaWorldDb.php',
     'classes/MyUnaWorldRestore.php',
-    'status.php',
+    'classes/MyUnaWorldStudioPage.php',
+    'classes/MyUnaWorldMaintenance.php',
+    'install/langs/en.xml',
+    'template/media/my-una-doctor-server.mp4',
+    'template/media/my-una-doctor-server-poster.jpg',
+    'classes/MyUnaMaintenanceLease.php',
     'install/config.php',
+    'README.txt',
     'template/images/icons/std-icon.svg',
 );
 $failures = array();
 $checks = 0;
-foreach (array('1.3.3' => '133', '1.3.4' => '134') as $from => $uriVersion) {
-    $update = $root . '/updates/' . $from . '_1.3.5';
+foreach (array('1.3.5' => '135') as $from => $uriVersion) {
+    $update = $root . '/updates/' . $from . '_1.3.6';
     $config = candidateConfig($update . '/install/config.php');
     $expected = array(
         'version_from' => $from,
-        'version_to' => '1.3.5',
-        'home_dir' => 'newton/my_una_world/updates/update_' . $from . '_1.3.5/',
-        'home_uri' => 'my_una_world_update_' . $uriVersion . '_135',
+        'version_to' => '1.3.6',
+        'home_dir' => 'newton/my_una_world/updates/update_' . $from . '_1.3.6/',
+        'home_uri' => 'my_una_world_update_' . $uriVersion . '_136',
         'module_dir' => 'newton/my_una_world/',
         'module_uri' => 'my_una_world',
-        'install' => array('execute_sql' => 0, 'update_files' => 1, 'update_languages' => 0, 'clear_db_cache' => 1),
+        'install' => array('execute_sql' => 0, 'update_files' => 1, 'update_languages' => 1, 'clear_db_cache' => 1),
     );
     foreach ($expected as $key => $value) {
         $checks++;
@@ -51,8 +54,17 @@ foreach (array('1.3.3' => '133', '1.3.4' => '134') as $from => $uriVersion) {
     }
 }
 $checks++;
-if ($module['version'] !== '1.3.5')
-    $failures[] = 'Full installer must register version 1.3.5';
+if ($module['version'] !== '1.3.6')
+    $failures[] = 'Full installer must register version 1.3.6';
+
+// Published 1.3.5 routes remain frozen at f7522aa rather than following later runtime.
+$pinned = json_decode(file_get_contents(__DIR__ . '/fixtures/world-135-update-blobs.json'), true);
+foreach ($pinned as $path => $blob) {
+    $checks++;
+    $bytes = is_file($root . '/' . $path) ? file_get_contents($root . '/' . $path) : null;
+    if ($bytes === null || sha1('blob ' . strlen($bytes) . "\0" . $bytes) !== $blob)
+        $failures[] = 'Published 1.3.5 updater changed: ' . $path;
+}
 
 if ($failures) {
     fwrite(STDERR, "Candidate updater failures:\n- " . implode("\n- ", $failures) . "\n");
