@@ -17,6 +17,10 @@ checkPage(str_contains($html,'Database export') && str_contains($html,'fixture_r
 BxDolModule::$instance->active=array('id'=>4,'created_at'=>time()-900,'started_at'=>time()-600,'finished_at'=>0,'mode'=>'full','status'=>'running','progress'=>15,'stage'=>'Database','message'=>'Table 1 of 2: fixture_rows | Rows exported: 500.');
 $active=$page->renderBackups();
 checkPage(str_contains($active,'id="muw-job-started"') && str_contains($active,'id="muw-job-duration"'),'active backups display start time and elapsed duration');
+BxDolModule::$instance->active['status']='queued';
+BxDolModule::$instance->active['started_at']=0;
+$queued=$page->renderBackups();
+checkPage(str_contains($queued, 'id="muw-job-title">Backup queued'), 'queued job title must not claim backup is actively running');
 if($failures){fwrite(STDERR,"Backups page failures:\n- ".implode("\n- ",$failures)."\n");exit(1);}
 if(getenv('MUW_PREVIEW_OUTPUT'))file_put_contents(getenv('MUW_PREVIEW_OUTPUT'),$html);
 echo "Backups page assertions passed: $checks\n";

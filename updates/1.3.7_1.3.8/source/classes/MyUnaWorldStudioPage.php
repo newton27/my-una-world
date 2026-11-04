@@ -547,7 +547,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
 
         $sContent = '<div class="bx-def-padding bx-def-margin-bottom" style="border:1px solid rgba(128,128,128,.35);border-radius:8px">';
         $sContent .= '<strong id="muw-job-title">' .
-            $this->_h($bActive ? _t('_my_una_world_backup_active') : _t('_my_una_world_backup_recent')) .
+            $this->_h($sStatus === 'queued' ? 'Backup queued — waiting for worker' : ($bActive ? _t('_my_una_world_backup_active') : _t('_my_una_world_backup_recent'))) .
             '</strong>';
         $sContent .= '<div class="bx-def-font-small bx-def-margin-sec-top" id="muw-job-stage">' .
             $this->_h($aJob['stage']) . ' · ' . $this->_h($aJob['message']) . '</div>';
@@ -583,6 +583,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                 'function poll(){fetch(url,{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json();}).then(function(d){' .
                 'if(!d||!d.ok||!d.job)return;' .
                 'var j=d.job,p=document.getElementById("muw-job-progress"),pc=document.getElementById("muw-job-percent"),st=document.getElementById("muw-job-status"),sg=document.getElementById("muw-job-stage");' .
+                'var title=document.getElementById("muw-job-title");if(title)title.textContent=j.status==="queued"?"Backup queued — waiting for worker":' . json_encode(_t('_my_una_world_backup_active')) . ';' .
                 'if(p)p.value=j.progress||0;if(pc)pc.textContent=(j.progress||0)+"%";if(st)st.textContent=j.status||"";if(sg)sg.textContent=(j.stage||"")+" · "+(j.message||"");' .
                 'var a=document.getElementById("muw-job-started"),b=document.getElementById("muw-job-finished"),c=document.getElementById("muw-job-duration");' .
                 'if(a)a.textContent=stamp(j.started_at)||"Waiting for worker";if(b)b.textContent=stamp(j.finished_at)||"Pending";' .
