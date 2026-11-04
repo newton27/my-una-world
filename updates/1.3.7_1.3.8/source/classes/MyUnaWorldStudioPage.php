@@ -31,7 +31,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
             ),
             'recovery' => array(
                 'name' => 'recovery',
-                'icon' => 'rotate-ccw',
+                'icon' => 'undo',
                 'title' => '_my_una_world_recovery',
             ),
             'settings' => array(
