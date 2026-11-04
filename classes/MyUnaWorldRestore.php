@@ -2,7 +2,7 @@
 
 class MyUnaWorldRestore
 {
-    const CURRENT_TOOL_VERSION = '1.3.7';
+    const CURRENT_TOOL_VERSION = '1.3.8';
 
     protected $_oModule;
     protected $_oDb;

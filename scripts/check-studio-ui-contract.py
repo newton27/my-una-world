@@ -9,6 +9,10 @@ errors = []
 page = (root/'classes/MyUnaWorldStudioPage.php').read_text()
 if "'icon' => 'life-ring'" in page:
     errors.append('Recovery uses life-ring, which UNA Lucide leaves unrendered')
+for field_type in ['text', 'number']:
+    for match in re.finditer(r'<input type="' + field_type + r'"[^>]*', page):
+        if 'bx-form-input-text' not in match.group(0):
+            errors.append('Unstyled ' + field_type + ' input inherits unreadable dark-mode text')
 for update in sorted((root/'updates').glob('*_' + version)):
     xml = ET.parse(update/'install/langs/en.xml')
     for key in ['_my_una_world_backup_intro', '_my_una_world_desc']:

@@ -169,7 +169,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                             '" style="display:inline-block;margin:3px 0" onsubmit="return this.confirmation.value===\'RESTORE\' && confirm(\'Restore this backup? A fresh full safety backup is created first.\');">';
                         $sContent .= $this->_hiddenCommon('restore');
                         $sContent .= '<input type="hidden" name="backup_id" value="' . (int)$a['id'] . '">';
-                        $sContent .= '<input type="text" name="confirmation" value="" placeholder="RESTORE" autocomplete="off" style="width:90px"> ';
+                        $sContent .= '<input type="text" class="bx-def-font-inputs bx-form-input-text" name="confirmation" value="" placeholder="RESTORE" autocomplete="off" style="width:90px"> ';
                         $sContent .= '<button class="bx-btn" type="submit">Restore</button>';
                         $sContent .= '</form> ';
                     }
@@ -476,7 +476,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
 
         $sContent .= '<div class="bx-def-margin-bottom"><label><strong>' .
             $this->_h(_t('_my_una_world_retention_max_archives')) .
-            '</strong><br><input type="number" min="0" max="1000" step="1" name="retention_max_archives" value="' .
+            '</strong><br><input type="number" class="bx-def-font-inputs bx-form-input-text" min="0" max="1000" step="1" name="retention_max_archives" value="' .
             (int)$aSettings['retention_max_archives'] . '" style="max-width:160px"></label><br>' .
             '<span class="bx-def-font-small">' .
             $this->_h(_t('_my_una_world_retention_max_archives_desc')) .
@@ -484,7 +484,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
 
         $sContent .= '<div class="bx-def-margin-bottom"><label><strong>' .
             $this->_h(_t('_my_una_world_retention_max_age_days')) .
-            '</strong><br><input type="number" min="0" max="3650" step="1" name="retention_max_age_days" value="' .
+            '</strong><br><input type="number" class="bx-def-font-inputs bx-form-input-text" min="0" max="3650" step="1" name="retention_max_age_days" value="' .
             (int)$aSettings['retention_max_age_days'] . '" style="max-width:160px"></label><br>' .
             '<span class="bx-def-font-small">' .
             $this->_h(_t('_my_una_world_retention_max_age_days_desc')) .
@@ -788,7 +788,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
     protected function _textSetting($sName, $sCaption, $sValue, $sDescription)
     {
         return '<div class="bx-def-margin-bottom"><label><strong>' .
-            $this->_h($sCaption) . '</strong><br><input type="text" name="' .
+            $this->_h($sCaption) . '</strong><br><input type="text" class="bx-def-font-inputs bx-form-input-text" name="' .
             $this->_h($sName) . '" value="' . $this->_h($sValue) .
             '" style="width:100%;max-width:900px"></label><br><span class="bx-def-font-small">' .
             $this->_h($sDescription) . '</span></div>';

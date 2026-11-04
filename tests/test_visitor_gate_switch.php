@@ -223,6 +223,15 @@ try {
     $_POST = array();
     $oOffPage = new VisitorGateSettingsStudioPage('my_una_world', 'settings', 'settings');
     $sOffHtml = $oOffPage->renderSettings();
+    $contrastDom = new DOMDocument();
+    @$contrastDom->loadHTML($sOffHtml);
+    $contrastInputs = (new DOMXPath($contrastDom))->query('//input[@type="text" or @type="number"]');
+    muw_switch_assert_same(7, $contrastInputs->length, 'all seven Settings entry fields are covered');
+    foreach ($contrastInputs as $contrastInput) {
+        $classes = explode(' ', $contrastInput->getAttribute('class'));
+        muw_switch_assert_same(true, in_array('bx-form-input-text', $classes) && in_array('bx-def-font-inputs', $classes), 'Settings field uses native theme colors: ' . $contrastInput->getAttribute('name'));
+    }
+
     muw_switch_assert_same(false, muw_switch_checkbox_checked($sOffHtml, 'visitor_gate_enabled'), 'Studio renders Visitor Gate unchecked when OFF');
     muw_switch_assert_same(true, strpos($sOffHtml, 'Enable Visitor Gate') !== false, 'Studio renders exact Visitor Gate label from language key');
     muw_switch_assert_same(true, strpos($sOffHtml, 'Restricts logged-out visitors to Home, Login, Create Account, Forgot Password, Terms, and Privacy. Logged-in members and administrators remain unrestricted.') !== false, 'Studio renders exact Visitor Gate description from language key');

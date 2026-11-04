@@ -33,14 +33,14 @@ validation = subprocess.run([sys.executable, str(source / 'scripts/validate-cand
 if validation.returncode:
     raise RuntimeError(validation.stdout + validation.stderr)
 version = re.search(r"'version'\s*=>\s*'([^']+)'", (source / 'install/config.php').read_text())[1]
-assert version == '1.3.7'
+assert version == '1.3.8'
 full = {p.relative_to(source).as_posix(): p for p in source.rglob('*') if p.is_file()
     and (p.relative_to(source).parts[0] in ['classes', 'install', 'template']
          or p.relative_to(source).as_posix() in ['README.txt','action.php','download.php','report.php','status.php','std-icon.svg','studio-icon.svg'])}
-update = source / 'updates/1.3.6_1.3.7'
+update = source / 'updates/1.3.7_1.3.8'
 payload = {p.relative_to(update).as_posix(): p for p in update.rglob('*') if p.is_file()}
-assets = [('My-UNA-World-1.3.7.zip','my_una_world/',full,None),
-          ('My-UNA-World-Update-1.3.6-to-1.3.7.zip','update_1.3.6_1.3.7/',payload,'1.3.6')]
+assets = [('My-UNA-World-1.3.8.zip','my_una_world/',full,None),
+          ('My-UNA-World-Update-1.3.7-to-1.3.8.zip','update_1.3.7_1.3.8/',payload,'1.3.7')]
 def build(root, mapping):
     data = io.BytesIO()
     directories = {root}
