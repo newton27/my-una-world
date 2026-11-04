@@ -55,6 +55,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         $sContent .= '<div class="bx-def-padding">';
         $sContent .= '<h2>' . $this->_h(_t('_my_una_world')) . '</h2>';
         $sContent .= '<p>' . $this->_h(_t('_my_una_world_desc')) . '</p>';
+        $sContent .= '<p>' . $this->_h(_t('_my_una_world_backup_intro')) . '</p>';
 
         $sContent .= '<div class="bx-def-margin-top">';
         $sContent .= '<strong>' . $this->_h(_t('_my_una_world_version')) . ':</strong> ' .

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources name="en" flag="gb" title="English">
+    <string name="_my_una_world"><![CDATA[My UNA World]]></string>
+    <string name="_my_una_world_backup_intro"><![CDATA[A site is only as safe as its last backup. This tool creates a complete copy of your UNA site from inside Studio, and it can run on its own whenever your site changes.]]></string>
+    <string name="_my_una_world_desc"><![CDATA[Your database, installed modules, and storage files, all safely covered.]]></string>
+
+    <string name="_my_una_world_overview"><![CDATA[Overview]]></string>
+    <string name="_my_una_world_backups"><![CDATA[Backups]]></string>
+    <string name="_my_una_world_recovery"><![CDATA[Recovery]]></string>
+    <string name="_my_una_world_settings"><![CDATA[Settings]]></string>
+    <string name="_my_una_world_version"><![CDATA[Module version]]></string>
+    <string name="_my_una_world_backup_folder"><![CDATA[Private backup folder]]></string>
+    <string name="_my_una_world_latest_backup"><![CDATA[Latest backup]]></string>
+    <string name="_my_una_world_quick_actions"><![CDATA[Quick actions]]></string>
+    <string name="_my_una_world_inventory_test"><![CDATA[Inventory Test]]></string>
+    <string name="_my_una_world_full_backup"><![CDATA[Create Full Backup]]></string>
+    <string name="_my_una_world_bootstrap_note"><![CDATA[For complete server-loss recovery: install the matching UNA core, install My UNA World, copy your backup ZIPs into the private backup folder, then use Recovery to register, inspect, dry-run, and restore.]]></string>
+    <string name="_my_una_world_backups_desc"><![CDATA[Manage verified backup archives and run inspect, dry-run, restore, download, or delete operations.]]></string>
+    <string name="_my_una_world_no_backups"><![CDATA[No backups are registered yet.]]></string>
+    <string name="_my_una_world_recovery_desc"><![CDATA[Re-register downloaded backups after a fresh UNA installation, upload smaller backup files, and manage restore/rollback reports.]]></string>
+    <string name="_my_una_world_scan_folder"><![CDATA[Scan Private Backup Folder]]></string>
+    <string name="_my_una_world_scan_folder_desc"><![CDATA[For large backups, copy the original ZIP and optional sidecars into this private folder using SFTP, SCP, or your hosting file manager. My UNA World can then validate and register them without a web upload.]]></string>
+    <string name="_my_una_world_no_archives_found"><![CDATA[No My UNA World ZIP archives were found in the private backup folder.]]></string>
+    <string name="_my_una_world_upload_backup"><![CDATA[Upload Existing Backup]]></string>
+    <string name="_my_una_world_upload_backup_desc"><![CDATA[Use this for smaller backups that fit your PHP/web-server upload limits. Large backups should be copied directly to the private backup folder and registered above.]]></string>
+    <string name="_my_una_world_restore_reports"><![CDATA[Restore Reports]]></string>
+    <string name="_my_una_world_no_restore_reports"><![CDATA[No restore or rollback reports are present.]]></string>
+    <string name="_my_una_world_visitor_gate_enabled"><![CDATA[Enable Visitor Gate]]></string>
+    <string name="_my_una_world_visitor_gate_enabled_desc"><![CDATA[Restricts logged-out visitors to Home, Login, Create Account, Forgot Password, Terms, and Privacy. Logged-in members and administrators remain unrestricted.]]></string>
+    <string name="_my_una_world_backup_before_install"><![CDATA[Backup before module install]]></string>
+    <string name="_my_una_world_backup_before_install_desc"><![CDATA[Create a full safety snapshot before a newly installed UNA module changes the site.]]></string>
+    <string name="_my_una_world_backup_before_uninstall"><![CDATA[Backup before module removal or update]]></string>
+    <string name="_my_una_world_backup_before_uninstall_desc"><![CDATA[Create a full safety snapshot before an installed module is removed or updated.]]></string>
+    <string name="_my_una_world_block_on_failure"><![CDATA[Block the module operation if its safety backup fails]]></string>
+    <string name="_my_una_world_block_on_failure_desc"><![CDATA[Recommended. UNA will not proceed with the module change if My UNA World cannot create its pre-change safety backup.]]></string>
+    <string name="_my_una_world_save_settings"><![CDATA[Save Settings]]></string>
+
+
+    <string name="_my_una_world_retention"><![CDATA[Backup Retention]]></string>
+    <string name="_my_una_world_retention_desc"><![CDATA[Automatically limit private backup storage by archive count and/or age. A backup is deleted when it exceeds either enabled limit. Protected rollback safety backups are never automatically deleted.]]></string>
+    <string name="_my_una_world_retention_max_archives"><![CDATA[Maximum backup ZIPs to keep]]></string>
+    <string name="_my_una_world_retention_max_archives_desc"><![CDATA[Enter 0 for unlimited. Example: 10 keeps the 10 newest eligible backup archives.]]></string>
+    <string name="_my_una_world_retention_max_age_days"><![CDATA[Delete backups older than (days)]]></string>
+    <string name="_my_una_world_retention_max_age_days_desc"><![CDATA[Enter 0 to disable age-based deletion. Example: 30 removes eligible backups older than 30 days.]]></string>
+    <string name="_my_una_world_run_cleanup"><![CDATA[Run Cleanup Now]]></string>
+
+
+    <string name="_my_una_world_backup_active"><![CDATA[Backup actively working]]></string>
+    <string name="_my_una_world_backup_recent"><![CDATA[Most recent backup job]]></string>
+    <string name="_my_una_world_safe_to_leave"><![CDATA[You may leave this page.]]></string>
+    <string name="_my_una_world_safe_to_leave_desc"><![CDATA[Manual backups run through UNA's background worker. Return to Overview or Backups at any time to see current progress.]]></string>
+
+</resources>

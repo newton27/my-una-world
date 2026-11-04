@@ -19,6 +19,9 @@ $files = array(
     'classes/MyUnaWorldRestore.php',
     'classes/MyUnaWorldStudioPage.php',
     'classes/MyUnaWorldMaintenance.php',
+    'install/langs/en.xml',
+    'template/media/my-una-doctor-server.mp4',
+    'template/media/my-una-doctor-server-poster.jpg',
     'classes/MyUnaMaintenanceLease.php',
     'install/config.php',
     'README.txt',
@@ -36,7 +39,7 @@ foreach (array('1.3.5' => '135') as $from => $uriVersion) {
         'home_uri' => 'my_una_world_update_' . $uriVersion . '_136',
         'module_dir' => 'newton/my_una_world/',
         'module_uri' => 'my_una_world',
-        'install' => array('execute_sql' => 0, 'update_files' => 1, 'update_languages' => 0, 'clear_db_cache' => 1),
+        'install' => array('execute_sql' => 0, 'update_files' => 1, 'update_languages' => 1, 'clear_db_cache' => 1),
     );
     foreach ($expected as $key => $value) {
         $checks++;

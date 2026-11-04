@@ -38,7 +38,7 @@ class MaintenanceEngine {
             if ($this->module->custom && !$this->module->preexisting) {
                 $html = getParam('sys_maintenance_mode_html');
                 checkMaintenance(str_contains($html, 'World &lt;custom&gt; heading'), 'saved maintenance heading renders safely');
-                checkMaintenance(str_contains($html, 'id="muw-maintenance"'), 'World page is actually installed for the run');
+                checkMaintenance(str_contains($html, 'id="mud-maintenance"'), 'World page is actually installed for the run');
                 checkMaintenance(!str_contains($html, 'PRIVATE-BACKUP-PATH'), 'public page does not disclose private backup details');
             } else {
                 checkMaintenance(getParam('sys_maintenance_mode_html') === 'Original UNA maintenance', 'existing or opted-out maintenance page is preserved');
