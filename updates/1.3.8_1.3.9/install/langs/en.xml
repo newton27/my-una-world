@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources name="en">
+    <string_upd name="_my_una_world_backup_intro"><![CDATA[A site is only as safe as its last backup. This tool creates a complete copy of your UNA site from inside Studio, and it can run on its own whenever your site changes.]]></string_upd>
+    <string_upd name="_my_una_world_desc"><![CDATA[Your database, installed modules, and storage files, all safely covered.]]></string_upd>
+</resources>

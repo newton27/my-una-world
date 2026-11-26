@@ -231,6 +231,32 @@ class MyUnaWorldModule extends BxDolModule
         return new MyUnaWorldRestore($this, $this->_getBackupEngine());
     }
 
+    public function getBackupSchedule()
+    {
+        require_once __DIR__ . '/MyUnaWorldSchedule.php';
+        return new MyUnaWorldSchedule($this);
+    }
+
+    public function queueScheduledBackup($slot)
+    {
+        $context = array('trigger' => 'scheduled', 'schedule_slot' => (string)$slot,
+            'reason' => 'Automatic full backup queued by the saved Studio schedule.');
+        $lock = $this->_openQueueWorkerLock();
+        if (!flock($lock, LOCK_EX | LOCK_NB)) {
+            fclose($lock);
+            throw new RuntimeException('The backup worker is busy; the schedule will retry.');
+        }
+        try {
+            // A crash after inserting a job must not queue the same due slot twice.
+            $existing = $this->_oDb->getJobByContext($context);
+            return $existing ?: $this->_queueBackupWithLock('full', $context);
+        }
+        finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
     public function queueBackup($sMode = 'full', array $aContext = array())
     {
         $hLock = $this->_openQueueWorkerLock();

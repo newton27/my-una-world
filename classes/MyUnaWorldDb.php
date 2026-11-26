@@ -66,6 +66,15 @@ class MyUnaWorldDb extends BxDolModuleDb
         );
     }
 
+    public function getJobByContext(array $context)
+    {
+        $this->ensureJobsTable();
+        return $this->getRow(
+            "SELECT * FROM `my_una_world_jobs` WHERE `context_json` = :context ORDER BY `id` DESC LIMIT 1",
+            array('context' => json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE))
+        );
+    }
+
     public function getActiveJob()
     {
         $this->ensureJobsTable();

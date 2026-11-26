@@ -120,6 +120,8 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         $sContent .= $this->_postButton('backups', 'backup_inventory', 'Inventory Test', false);
         $sContent .= '</div></header>';
 
+        $sContent .= '<p>Use Delete on a backup card to remove its ZIP and verification files. Rollback safety backups remain protected. Configure automatic cleanup in Settings → Backup Retention.</p>';
+
         if (!$aBackups) {
             $sContent .= '<p class="bx-def-font-small">' . $this->_h(_t('_my_una_world_no_backups')) . '</p>';
         }
@@ -149,6 +151,17 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                     $sContent .= '<p class="muw-backup-note">' . $this->_h($a['message']) . '</p>';
                 $sContent .= $this->_backupTimingDetails($aTiming);
                 $sContent .= '<div class="muw-backup-primary-actions">';
+                if (!$bProtected) {
+                    $sContent .= $this->_postButton(
+                        'backups',
+                        'delete_backup',
+                        'Delete',
+                        true,
+                        array('backup_id' => (int)$a['id']),
+                        'Delete this backup ZIP, sidecars, and history row?'
+                    );
+                }
+
                 if ($bComplete) {
                     $sContent .= '<a class="bx-btn" href="' . $this->_h(BX_DOL_URL_ROOT .
                         'modules/newton/my_una_world/download.php?id=' . (int)$a['id']) . '">Download</a> ';
@@ -173,17 +186,6 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                         $sContent .= '<button class="bx-btn" type="submit">Restore</button>';
                         $sContent .= '</form> ';
                     }
-                }
-
-                if (!$bProtected) {
-                    $sContent .= $this->_postButton(
-                        'backups',
-                        'delete_backup',
-                        'Delete',
-                        true,
-                        array('backup_id' => (int)$a['id']),
-                        'Delete this backup ZIP, sidecars, and history row?'
-                    );
                 }
 
                 $sContent .= '</div></details></article>';
@@ -382,6 +384,7 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         $sContent = $this->_notice();
         $sContent .= '<div class="bx-def-padding">';
         $sContent .= '<h2>' . $this->_h(_t('_my_una_world_settings')) . '</h2>';
+        $sContent .= $this->_schedulePanel();
         $sContent .= '<form method="post" action="' . $this->_h($this->_pageUrl('settings')) . '">';
         $sContent .= $this->_hiddenCommon('save_settings');
 
@@ -521,6 +524,36 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
         return BxDolStudioTemplate::getInstance()->parseHtmlByName('module.html', array(
             'content' => $sContent,
         ));
+    }
+
+    protected function _schedulePanel()
+    {
+        $settings = $this->_oModule->getBackupSchedule()->getSettings();
+        $content = '<h3>Automatic Backups</h3><p>Schedule full backups during quiet hours. Full backups pause public access until finished. The UNA background worker must be running; starts occur on its next tick.</p>';
+        $content .= '<form method="post" action="' . $this->_h($this->_pageUrl('settings')) . '">';
+        $content .= $this->_hiddenCommon('save_schedule');
+        $content .= $this->_checkbox('schedule_enabled', 'Enable automatic backups', $settings['enabled'], 'Uses the frequency, date, time and timezone below.');
+        $content .= '<label>Frequency<br><select class="bx-def-font-inputs bx-form-input-select" name="schedule_frequency">';
+        foreach (array('daily' => 'Daily', 'weekly' => 'Weekly (on the start-date weekday)', '48hours' => 'Every 48 hours', 'custom' => 'Custom number of hours') as $value => $label)
+            $content .= '<option value="' . $value . '"' . ($settings['frequency'] === $value ? ' selected' : '') . '>' . $this->_h($label) . '</option>';
+        $content .= '</select></label>';
+        foreach (array('hours' => array('number', 'Custom interval (hours)', ' min="1" max="8760" step="1"'),
+            'start_date' => array('date', 'Start date', ''), 'start_time' => array('time', 'Start time', ' step="60"')) as $key => $field) {
+            $content .= '<div class="bx-def-margin-top"><label>' . $field[1] . '<br><input required class="bx-def-font-inputs bx-form-input-text" type="' . $field[0] . '" name="schedule_' . $key . '" value="' . $this->_h($settings[$key]) . '"' . $field[2] . '></label></div>';
+        }
+        $content .= '<div class="bx-def-margin-top"><label>Timezone<br><select class="bx-def-font-inputs bx-form-input-select" name="schedule_timezone">';
+        foreach (DateTimeZone::listIdentifiers() as $zone)
+            $content .= '<option value="' . $this->_h($zone) . '"' . ($settings['timezone'] === $zone ? ' selected' : '') . '>' . $this->_h($zone) . '</option>';
+        $content .= '</select></label></div><p>Daily and weekly schedules keep local time across daylight saving changes. Hourly intervals use elapsed hours. Missed runs produce one catch-up backup when the worker resumes.</p>';
+        $content .= '<button class="bx-btn" type="submit">Save backup schedule</button></form>';
+        $content .= '<p><strong>Next scheduled run:</strong> ' . ($settings['enabled'] && $settings['next_run']
+            ? $this->_h((new DateTimeImmutable('@' . $settings['next_run']))->setTimezone(new DateTimeZone($settings['timezone']))->format('Y-m-d H:i T'))
+            : 'Disabled') . '</p>';
+        if ($settings['last_job_id'])
+            $content .= '<p>Last scheduled job: #' . (int)$settings['last_job_id'] . '. Check Backups for completion.</p>';
+        if ($settings['last_error'] !== '')
+            $content .= '<p><strong>Schedule waiting:</strong> ' . $this->_h($settings['last_error']) . '</p>';
+        return $content;
     }
 
     protected function _backgroundJobPanel()
@@ -696,6 +729,18 @@ class MyUnaWorldStudioPage extends BxTemplStudioModule
                     $this->_sPostMessage = $this->_bPostSuccess
                         ? 'Rollback completed and passed automatic verification.'
                         : 'Rollback completed, but verification found problems.';
+                    break;
+
+                case 'save_schedule':
+                    $this->_aPostResult = $this->_oModule->getBackupSchedule()->save(array(
+                        'enabled' => isset($_POST['schedule_enabled']),
+                        'frequency' => isset($_POST['schedule_frequency']) ? (string)$_POST['schedule_frequency'] : '',
+                        'hours' => isset($_POST['schedule_hours']) ? $_POST['schedule_hours'] : '',
+                        'start_date' => isset($_POST['schedule_start_date']) ? (string)$_POST['schedule_start_date'] : '',
+                        'start_time' => isset($_POST['schedule_start_time']) ? (string)$_POST['schedule_start_time'] : '',
+                        'timezone' => isset($_POST['schedule_timezone']) ? (string)$_POST['schedule_timezone'] : '',
+                    ));
+                    $this->_sPostMessage = 'Automatic backup schedule saved.';
                     break;
 
                 case 'save_settings':

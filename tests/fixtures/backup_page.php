@@ -4,7 +4,7 @@ $_SERVER['REQUEST_METHOD']='GET';
 class BxDolModule {public static $instance;public static function getInstance($name){return self::$instance;}}
 class BxTemplStudioModule {public $sManageUrl='/studio/module.php?name=my_una_world';public $sPageDefault;public $aMenuItems;function __construct($m,$n,$p=''){}}
 class BxDolStudioTemplate {static function getInstance(){return new self();}function parseHtmlByName($name,$vars){return $vars['content'];}}
-class BxDolForm {static function getCsrfToken(){return 'fixture-csrf';}}
+class BxDolForm {static function getCsrfToken(){return 'fixture-csrf';}static function isCsrfTokenValid($token){return $token==='fixture-csrf';}}
 function getParam($name){return 'on';}
 function bx_append_url_params($url,$params){return $url.'&'.http_build_query($params);}
 function _t($key){return array('_my_una_world_backups'=>'Backups','_my_una_world_backups_desc'=>'Manage backup archives and recovery actions.','_my_una_world_backup_active'=>'Backup in progress')[$key]??$key;}

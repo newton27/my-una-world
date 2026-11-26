@@ -1,3 +1,5 @@
+> Development candidate: **1.3.9** adds recurring backup schedules and directly visible Delete buttons. See [README.txt](README.txt) for setup and limitations. Native acceptance and publication are pending. Historical release packages are unchanged.
+
 # My UNA World
 
 Your database, installed modules, and storage files, all safely covered.
