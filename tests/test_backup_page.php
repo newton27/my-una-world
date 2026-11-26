@@ -12,7 +12,8 @@ checkPage(!str_contains($html,'<script>alert') && str_contains($html,'&lt;script
 checkPage($xp->query('//form[input[@name="muw_action" and @value="delete_backup"] and input[@name="backup_id" and @value="2"]]')->length===0,'protected rollback backup has no delete action');
 checkPage($xp->query('//form[input[@name="muw_action" and @value="restore"]]/input[@name="confirmation" and @placeholder="RESTORE"]')->length===2,'full restore still requires typed confirmation');
 checkPage($xp->query('//form[not(input[@name="csrf" and @value="fixture-csrf"])]')->length===0,'every action retains its CSRF token');
-checkPage($xp->query('//details[summary[contains(text(),"Recovery actions")]]//button[text()="Delete"]')->length===2,'destructive actions stay inside an explicit recovery group');
+checkPage($xp->query('//div[@class="muw-backup-primary-actions"]//button[text()="Delete"]')->length===2,'Delete is visible directly on eligible backup cards');
+checkPage($xp->query('//form[input[@name="muw_action" and @value="delete_backup"] and @onsubmit]')->length===2,'visible Delete actions retain confirmation');
 checkPage(str_contains($html,'Database export') && str_contains($html,'fixture_rows'),'phase timing and slow-table evidence are available for review');
 BxDolModule::$instance->active=array('id'=>4,'created_at'=>time()-900,'started_at'=>time()-600,'finished_at'=>0,'mode'=>'full','status'=>'running','progress'=>15,'stage'=>'Database','message'=>'Table 1 of 2: fixture_rows | Rows exported: 500.');
 $active=$page->renderBackups();

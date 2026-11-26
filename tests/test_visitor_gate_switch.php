@@ -226,7 +226,7 @@ try {
     $contrastDom = new DOMDocument();
     @$contrastDom->loadHTML($sOffHtml);
     $contrastInputs = (new DOMXPath($contrastDom))->query('//input[@type="text" or @type="number"]');
-    muw_switch_assert_same(7, $contrastInputs->length, 'all seven Settings entry fields are covered');
+    muw_switch_assert_same(8, $contrastInputs->length, 'lifecycle, retention and custom-hours fields are covered');
     foreach ($contrastInputs as $contrastInput) {
         $classes = explode(' ', $contrastInput->getAttribute('class'));
         muw_switch_assert_same(true, in_array('bx-form-input-text', $classes) && in_array('bx-def-font-inputs', $classes), 'Settings field uses native theme colors: ' . $contrastInput->getAttribute('name'));

@@ -11,6 +11,14 @@ class MyUnaWorldCron extends BxDolCron
         if (method_exists($oModule, 'touchBackgroundWorker'))
             $oModule->touchBackgroundWorker();
 
+        try {
+            $oModule->getBackupSchedule()->process();
+        }
+        catch (Throwable $e) {
+            // A damaged schedule must not stop already queued manual backups.
+            error_log('My UNA World schedule: ' . $e->getMessage());
+        }
+
         if (method_exists($oModule, 'processPendingBackupJob'))
             $oModule->processPendingBackupJob();
     }

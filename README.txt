@@ -1,3 +1,27 @@
+My UNA World 1.3.9 candidate — automatic backup scheduling
+
+Studio → My UNA World → Settings → Automatic Backups:
+- Enable daily, weekly, every 48 hours, or custom hourly full backups.
+- Choose the starting date, time, and timezone. Weekly repeats the chosen weekday.
+- Daily/weekly retain local clock time across daylight saving changes; hourly
+  intervals use elapsed hours. A nonexistent DST start time must be changed.
+- View the next scheduled run and the last scheduled job. Check Backups for
+  completion. A queued job does not mean that a backup succeeded.
+- UNA's registered backup worker must run every minute. After downtime, one
+  catch-up backup is queued. Busy workers retry without overlapping jobs.
+- Scheduling is disabled by default and has its own Save backup schedule button.
+- Full backups pause public access using the existing maintenance workflow.
+
+Studio → My UNA World → Backups:
+- Delete is now visible directly on each eligible backup card, with confirmation.
+- Delete removes that ZIP, its checksum, verification file and history entry.
+- Protected rollback safety backups cannot be deleted.
+- Existing Settings → Backup Retention can limit count and age and run cleanup.
+
+Candidate status: automated checks only; native install/update, live cron timing,
+light/dark visual checks, and real archive deletion still require acceptance.
+No published release or Marketplace download was changed.
+
 MY UNA WORLD 1.3.8
 ==================
 
